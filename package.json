@@ -15,7 +15,7 @@
         "node-fetch": "^3.2.6"
     },
     "devDependencies": {
-        "chai": "^4.4.1",
-        "mocha": "^10.2.0"
+        "@babel/preset-typescript": "^7.28.5",
+        "typescript": "^6.0.2"
     }
 }
