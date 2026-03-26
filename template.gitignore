@@ -1,9 +1,0 @@
-.git
-
-.gitignore
-
-.upm
-/node_modules
-
-.replit
-replit.nix
