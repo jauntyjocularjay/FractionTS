@@ -1,6 +1,6 @@
 class InvalidIntegerError extends RangeError {
-    constructor() {
-        super(`Fraction components must be integers.`)
+    constructor(numerator: number, denominator: number) {
+        super(`Fraction components must be integers. numerator: ${numerator}, denominator: ${denominator}`)
         this.name = 'InvalidIntegerError'
     }
 }
