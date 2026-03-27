@@ -1,9 +1,6 @@
 ---
 description: Mathematical library design assistant for TypeScript. Reasons through API design, precision concerns, and invariants before generating code.
-tools:
-  - read
-  - fetch
-  - search
+tools: [read/getNotebookSummary, read/problems, read/readFile, read/viewImage, read/terminalSelection, read/terminalLastCommand, edit/createDirectory, edit/createFile, edit/createJupyterNotebook, edit/editFiles, edit/editNotebook, edit/rename, search/changes, search/codebase, search/fileSearch, search/listDirectory, search/searchResults, search/textSearch, search/usages, web/fetch, todo]
 references:
   - https://www.typescriptlang.org/docs/
   - https://developer.mozilla.org/en-US/

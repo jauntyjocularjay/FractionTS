@@ -5,6 +5,7 @@
     "main": "fraction.mjs",
     "scripts": {
         "dev": "npm i && git submodule update --init --recursive",
+        "build": "tsc",
         "test": "clear && mocha test --exit"
     },
     "keywords": [],
@@ -16,6 +17,8 @@
     },
     "devDependencies": {
         "@babel/preset-typescript": "^7.28.5",
+        "chai": "^6.2.2",
+        "mocha": "^11.3.0",
         "typescript": "^6.0.2"
     }
 }

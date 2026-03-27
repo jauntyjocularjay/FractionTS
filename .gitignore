@@ -4,4 +4,5 @@
 /node_modules
 
 .replit
-replit.nix
+replit.nixdist
+dist/
