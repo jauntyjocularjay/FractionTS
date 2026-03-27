@@ -26,6 +26,19 @@ class Fraction {
         this.n = numerator
         this.d = denominator
     }
+
+    toString() {
+        return `${this.n} / ${this.d}`
+    }
+
+    toNumber() {
+        return this.n/this.d
+    }
+
+    toInteger() {
+        return Math.trunc(this.toNumber())
+    }
+
     /**
      * Creates a new {@link Fraction} from an existing one.
      * @param other - The source {@link Fraction} to construct from.
@@ -37,19 +50,23 @@ class Fraction {
     static negate(other: Fraction): Fraction {
         return new Fraction(-other.n, other.d)
     }
+    private static ValidateFraction(numerator: number, denominator: number) {
+        if (denominator === 0) throw new DivideByZeroError()
+        if (
+            !Number.isSafeInteger(numerator) ||
+            !Number.isSafeInteger(denominator)
+        )
+            throw new InvalidIntegerError(numerator, denominator)
+    }
     static reciprocal(other: Fraction): Fraction {
         if (other.n === 0) throw new DivideByZeroError()
 
         return new Fraction(other.d, other.n)
     }
-    private static ValidateFraction(numerator: number, denominator: number){
-        if (denominator === 0) {
-            throw new DivideByZeroError()
-        } else if (!Number.isSafeInteger(numerator) || !Number.isSafeInteger(denominator)) {
-            throw new InvalidIntegerError(numerator, denominator)
-        }
+    private static ValidateScalar(scalar: number) {
+        if (scalar === 0) throw new DivideByZeroError()
+        if (!Number.isSafeInteger(scalar)) throw new InvalidIntegerError(scalar)
     }
-
     private static GCD(a: number, b: number): number {
         if (a === 0) return b
         if (b === 0) return a
@@ -67,11 +84,22 @@ class Fraction {
 
         return a
     }
-    static reduce(fraction: Fraction):Fraction {
+    static reduce(fraction: Fraction): Fraction {
         const reducer: number = Fraction.GCD(fraction.n, fraction.d)
         return new Fraction(fraction.n / reducer, fraction.d / reducer)
     }
+    static expand(fraction: Fraction, scalar: number) {
+        Fraction.ValidateScalar(scalar)
+        const numerator = fraction.n * scalar
+        const denominator = fraction.n * scalar
+        if (
+            !Number.isSafeInteger(numerator) ||
+            !Number.isSafeInteger(denominator)
+        )
+            throw new InvalidIntegerError(numerator, denominator)
 
+        return new Fraction(numerator, denominator)
+    }
     get remainder() {
         return new Fraction(this.n % this.d, this.d)
     }
