@@ -1,7 +1,7 @@
 {
     "name": "fractionts",
     "version": "1.0.0",
-    "description": "An implementation of fractions for Typescript and Javascript.",
+    "description": "Immutable rational number type for TypeScript and JavaScript. Supports exact arithmetic via static methods, with optional implicit coercion to floating-point for use in standard numeric expressions.",
     "main": "./dist/Fraction.mjs",
     "exports": {
         ".": {

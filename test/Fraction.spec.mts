@@ -295,3 +295,41 @@ describe('Fraction.divideScalar()', () => {
         expect(() => Fraction.divideScalar(new Fraction(1, 2), 0)).toThrow(DivideByZeroError)
     })
 })
+
+// ---------------------------------------------------------------------------
+// Instance wrappers (chainable API)
+// ---------------------------------------------------------------------------
+
+describe('instance wrapper methods delegate to static counterparts', () => {
+    const a = new Fraction(1, 2)
+    const b = new Fraction(1, 4)
+
+    it('add()', ()          => { eqFrac(a.add(b),             3, 4) })
+    it('addScalar()', ()    => { eqFrac(a.addScalar(1),       3, 2) })
+    it('subtract()', ()     => { eqFrac(a.subtract(b),        1, 4) })
+    it('subtractScalar()',  () => { eqFrac(a.subtractScalar(1), -1, 2) })
+    it('multiply()', ()     => { eqFrac(a.multiply(b),         1, 8) })
+    it('multiplyScalar()', () => { eqFrac(a.multiplyScalar(3),  3, 2) })
+    it('divide()', ()       => { eqFrac(a.divide(b),           4, 2) })
+    it('divideScalar()', () => { eqFrac(a.divideScalar(2),     1, 4) })
+    it('negate()', ()       => { eqFrac(a.negate(),           -1, 2) })
+    it('reciprocal()', ()   => { eqFrac(a.reciprocal(),        2, 1) })
+    it('reduce()', ()       => { eqFrac(new Fraction(4, 8).reduce(), 1, 2) })
+    it('expand()', ()       => { eqFrac(a.expand(3),           3, 6) })
+})
+
+describe('chaining', () => {
+    it('supports multi-step chains', () => {
+        // (1/2 + 1/4) * 2 = 3/4 * 2 = 6/4, reduced = 3/2
+        const result = new Fraction(1, 2)
+            .add(new Fraction(1, 4))
+            .multiplyScalar(2)
+            .reduce()
+        eqFrac(result, 3, 2)
+    })
+
+    it('negate then reciprocal', () => {
+        // reciprocal of -(3/4) = -4/3
+        eqFrac(new Fraction(3, 4).negate().reciprocal(), -4, 3)
+    })
+})

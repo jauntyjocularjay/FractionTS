@@ -6,6 +6,7 @@ An immutable TypeScript class representing a rational number as a numerator/deno
 
 - The denominator is always normalised to a positive integer at construction time. Negative fractions are represented by a negative numerator.
 - All operations return new `Fraction` instances — no method mutates state.
+- All operations are available as both static methods and instance methods. The static form (`Fraction.add(a, b)`) makes it visually unambiguous that a new value is produced. The instance form (`a.add(b)`) supports fluent chaining for multi-step calculations. Each instance method is a one-line delegate to its static counterpart — the static methods are the single source of truth.
 - Inputs are validated eagerly; errors are thrown immediately rather than propagating silently.
 
 ## Using in a JavaScript project
@@ -92,12 +93,42 @@ Fraction.Zero  // 0/1 — prefer this over new Fraction(0, 1)
 
 ## Instance methods
 
+### Conversion
+
 | Method | Returns | Description |
 |---|---|---|
 | `toString()` | `string` | `'{n} / {d}'`, e.g. `'-8 / 4'` |
 | `toNumber()` | `number` | Floating-point value of `n / d` |
 | `toInteger()` | `number` | Integer part, truncated toward zero |
 | `valueOf()` | `number` | Enables implicit numeric coercion (see below) |
+| `remainder` | `Fraction` | Fractional part after removing the integer portion |
+
+### Chainable arithmetic
+
+Each method below is an instance wrapper around its static counterpart. They exist purely for call-site readability when chaining multiple operations:
+
+| Method | Static equivalent |
+|---|---|
+| `add(other)` | `Fraction.add(this, other)` |
+| `addScalar(scalar)` | `Fraction.addScalar(this, scalar)` |
+| `subtract(other)` | `Fraction.subtract(this, other)` |
+| `subtractScalar(scalar)` | `Fraction.subtractScalar(this, scalar)` |
+| `multiply(other)` | `Fraction.multiply(this, other)` |
+| `multiplyScalar(scalar)` | `Fraction.multiplyScalar(this, scalar)` |
+| `divide(other)` | `Fraction.divide(this, other)` |
+| `divideScalar(scalar)` | `Fraction.divideScalar(this, scalar)` |
+| `negate()` | `Fraction.negate(this)` |
+| `reciprocal()` | `Fraction.reciprocal(this)` |
+| `reduce()` | `Fraction.reduce(this)` |
+| `expand(scalar)` | `Fraction.expand(this, scalar)` |
+
+```ts
+// Static form — clear that a new value is produced
+const result = Fraction.reduce(Fraction.add(Fraction.multiply(a, b), c))
+
+// Instance form — left-to-right, chainable
+const result = a.multiply(b).add(c).reduce()
+```
 
 ### `valueOf()`
 
@@ -126,7 +157,8 @@ fraction.remainder  // new Fraction(n % d, d)
 Returns the fractional part after removing the integer portion.
 
 ```ts
-new Fraction(7, 2).remainder  // Fraction(1, 2)  →  0.5
+new Fraction(7, 2).remainder          // Fraction(1, 2)  →  0.5
+new Fraction(7, 2).remainder.reduce() // chaining works here too
 ```
 
 ## Static methods
@@ -297,6 +329,21 @@ try {
     if (e instanceof DivideByZeroError) { /* ... */ }
 }
 ```
+
+## Known Issues / Todo
+
+- [ ] **`multiplyScalar(fraction, 0)` incorrectly throws `DivideByZeroError`.**
+  Multiplying by zero is mathematically valid and should return `Fraction.Zero`. Currently `multiplyScalar` calls `ValidateScalar`, which rejects zero because that validator is shared with division operations where zero is genuinely invalid. The fix is to give `multiplyScalar` its own validation that only guards against non-safe-integer inputs, not zero.
+
+- [ ]  **`Fraction.equals()` is not implemented.**
+  The class has no structural equality method. Two fractions representing the same rational value (e.g. `1/2` and `2/4`) cannot be compared without first reducing both or converting to float (which is imprecise). The expected API:
+  ```ts
+  Fraction.equals(new Fraction(1, 2), new Fraction(2, 4))  // true
+  new Fraction(1, 2).equals(new Fraction(2, 4))            // true (instance form)
+  ```
+  Equality should compare after reducing both operands, so that `1/2 == 2/4 == 3/6` etc.
+
+---
 
 ## Precision note
 

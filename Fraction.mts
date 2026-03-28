@@ -272,6 +272,131 @@ export default class Fraction {
     }
 
     // -------------------------------------------------------------------------
+    // Instance wrappers (chainable API)
+    // Each method delegates to its static counterpart with `this` as the first argument.
+    // -------------------------------------------------------------------------
+
+    /**
+     * Returns a new {@link Fraction} equal to the sum of this and `other`.
+     * Delegates to {@link Fraction.add}.
+     * @param other - The {@link Fraction} to add.
+     * @returns A new {@link Fraction} representing `this + other`.
+     */
+    add(other: Fraction): Fraction {
+        return Fraction.add(this, other)
+    }
+
+    /**
+     * Returns a new {@link Fraction} equal to this plus an integer.
+     * Delegates to {@link Fraction.addScalar}.
+     * @param scalar - A safe integer to add.
+     * @returns A new {@link Fraction} representing `this + scalar`.
+     */
+    addScalar(scalar: number): Fraction {
+        return Fraction.addScalar(this, scalar)
+    }
+
+    /**
+     * Returns a new {@link Fraction} equal to the difference of this and `other`.
+     * Delegates to {@link Fraction.subtract}.
+     * @param other - The {@link Fraction} to subtract.
+     * @returns A new {@link Fraction} representing `this - other`.
+     */
+    subtract(other: Fraction): Fraction {
+        return Fraction.subtract(this, other)
+    }
+
+    /**
+     * Returns a new {@link Fraction} equal to this minus an integer.
+     * Delegates to {@link Fraction.subtractScalar}.
+     * @param scalar - A safe integer to subtract.
+     * @returns A new {@link Fraction} representing `this - scalar`.
+     */
+    subtractScalar(scalar: number): Fraction {
+        return Fraction.subtractScalar(this, scalar)
+    }
+
+    /**
+     * Returns a new {@link Fraction} equal to the product of this and `other`.
+     * Delegates to {@link Fraction.multiply}.
+     * @param other - The {@link Fraction} to multiply by.
+     * @returns A new {@link Fraction} representing `this * other`.
+     */
+    multiply(other: Fraction): Fraction {
+        return Fraction.multiply(this, other)
+    }
+
+    /**
+     * Returns a new {@link Fraction} equal to this multiplied by a scalar integer.
+     * Delegates to {@link Fraction.multiplyScalar}.
+     * @param scalar - A safe integer to multiply by.
+     * @returns A new {@link Fraction} representing `this * scalar`.
+     */
+    multiplyScalar(scalar: number): Fraction {
+        return Fraction.multiplyScalar(this, scalar)
+    }
+
+    /**
+     * Returns a new {@link Fraction} equal to this divided by `other`.
+     * Delegates to {@link Fraction.divide}.
+     * @param other - The {@link Fraction} to divide by.
+     * @returns A new {@link Fraction} representing `this / other`.
+     */
+    divide(other: Fraction): Fraction {
+        return Fraction.divide(this, other)
+    }
+
+    /**
+     * Returns a new {@link Fraction} equal to this divided by a scalar integer.
+     * Delegates to {@link Fraction.divideScalar}.
+     * @param scalar - A non-zero safe integer to divide by.
+     * @returns A new {@link Fraction} representing `this / scalar`.
+     */
+    divideScalar(scalar: number): Fraction {
+        return Fraction.divideScalar(this, scalar)
+    }
+
+    /**
+     * Returns a new {@link Fraction} with the sign of the numerator flipped.
+     * Delegates to {@link Fraction.negate}.
+     * @returns A new {@link Fraction} equal to `-this`.
+     */
+    negate(): Fraction {
+        return Fraction.negate(this)
+    }
+
+    /**
+     * Returns the reciprocal of this {@link Fraction}.
+     * Delegates to {@link Fraction.reciprocal}.
+     * @returns A new {@link Fraction} equal to `1 / this`.
+     * @throws {DivideByZeroError} If the numerator is zero.
+     */
+    reciprocal(): Fraction {
+        return Fraction.reciprocal(this)
+    }
+
+    /**
+     * Returns this {@link Fraction} reduced to lowest terms.
+     * Delegates to {@link Fraction.reduce}.
+     * @returns A new {@link Fraction} in lowest terms.
+     */
+    reduce(): Fraction {
+        return Fraction.reduce(this)
+    }
+
+    /**
+     * Returns this {@link Fraction} with both terms multiplied by `scalar`.
+     * Delegates to {@link Fraction.expand}.
+     * @param scalar - A non-zero safe integer to multiply by.
+     * @returns A new {@link Fraction} equal in value to this, with scaled terms.
+     * @throws {DivideByZeroError} If `scalar` is zero.
+     * @throws {InvalidIntegerError} If `scalar` is not a safe integer, or if the result overflows.
+     */
+    expand(scalar: number): Fraction {
+        return Fraction.expand(this, scalar)
+    }
+
+    // -------------------------------------------------------------------------
     // Private helpers
     // -------------------------------------------------------------------------
 
