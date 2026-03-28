@@ -332,10 +332,10 @@ try {
 
 ## Known Issues / Todo
 
-- [ ] **`multiplyScalar(fraction, 0)` incorrectly throws `DivideByZeroError`.**
+- [x] **`multiplyScalar(fraction, 0)` incorrectly throws `DivideByZeroError`.**
   Multiplying by zero is mathematically valid and should return `Fraction.Zero`. Currently `multiplyScalar` calls `ValidateScalar`, which rejects zero because that validator is shared with division operations where zero is genuinely invalid. The fix is to give `multiplyScalar` its own validation that only guards against non-safe-integer inputs, not zero.
 
-- [ ]  **`Fraction.equals()` is not implemented.**
+- [x]  **`Fraction.equals()` is not implemented.**
   The class has no structural equality method. Two fractions representing the same rational value (e.g. `1/2` and `2/4`) cannot be compared without first reducing both or converting to float (which is imprecise). The expected API:
   ```ts
   Fraction.equals(new Fraction(1, 2), new Fraction(2, 4))  // true

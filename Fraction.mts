@@ -22,15 +22,18 @@ export default class Fraction {
      * @throws {InvalidIntegerError} If either argument is not a safe integer.
      */
     constructor(numerator: number, denominator: number) {
+        let temp_numerator = numerator
+        let temp_denominator = denominator
+
         if (denominator < 0) {
-            numerator = -numerator
-            denominator = -denominator
+            temp_numerator = -numerator
+            temp_denominator = -denominator
         }
 
-        Fraction.ValidateFraction(numerator, denominator)
+        Fraction.ValidateFraction(temp_numerator, temp_denominator)
 
-        this.n = numerator
-        this.d = denominator
+        this.n = temp_numerator
+        this.d = temp_denominator
     }
 
     /**
@@ -64,6 +67,33 @@ export default class Fraction {
      */
     valueOf(): number {
         return this.toNumber()
+    }
+
+    /**
+     * Returns `true` if this {@link Fraction} represents the same rational value
+     * as `other`. Both fractions are reduced before comparison, so `1/2` and `2/4`
+     * are considered equal.
+     * @param other - The {@link Fraction} to compare against.
+     * @returns `true` if the two fractions are equal in value.
+     * @example new Fraction(1, 2).equals(new Fraction(2, 4)) // true
+     */
+    equals(other: Fraction): boolean {
+        return Fraction.equals(this, other)
+    }
+
+    /**
+     * Returns `true` if two {@link Fraction} instances represent the same rational
+     * value. Both fractions are reduced before comparison, so `1/2` and `2/4`
+     * are considered equal.
+     * @param fraction_a - The first {@link Fraction}.
+     * @param fraction_b - The second {@link Fraction}.
+     * @returns `true` if `a` and `b` are equal in value.
+     * @example Fraction.equals(new Fraction(1, 2), new Fraction(2, 4)) // true
+     */
+    static equals(a: Fraction, b: Fraction): boolean {
+        const fraction_a = Fraction.reduce(a)
+        const fraction_b = Fraction.reduce(b)
+        return fraction_a.n === fraction_b.n && fraction_a.d === fraction_b.d
     }
 
     /**
@@ -188,6 +218,8 @@ export default class Fraction {
      * result overflows safe integer range.
      */
     static multiplyScalar(fraction: Fraction, scalar: number): Fraction {
+        if(scalar === 0) return Fraction.Zero
+
         Fraction.ValidateScalar(scalar)
         const numerator = fraction.n * scalar
         if (!Number.isSafeInteger(numerator))
@@ -437,17 +469,17 @@ export default class Fraction {
         if (a === 0) return b
         if (b === 0) return a
 
-        a = Math.abs(a)
-        b = Math.abs(b)
+        let divisor_a = Math.abs(a)
+        let divisor_b = Math.abs(b)
 
         let swap: number
 
-        while (b !== 0) {
-            swap = b
-            b = a % b
-            a = swap
+        while (divisor_b !== 0) {
+            swap = divisor_b
+            divisor_b = divisor_a % divisor_b
+            divisor_a = swap
         }
 
-        return a
+        return divisor_a
     }
 }

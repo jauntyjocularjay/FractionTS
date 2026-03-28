@@ -263,8 +263,36 @@ describe('Fraction.multiplyScalar()', () => {
         eqFrac(Fraction.multiplyScalar(new Fraction(1, 4), -1), -1, 4)
     })
 
-    it('throws DivideByZeroError for scalar 0', () => {
-        expect(() => Fraction.multiplyScalar(new Fraction(1, 4), 0)).toThrow(DivideByZeroError)
+    it('returns Zero for scalar 0', () => {
+        expect(Fraction.multiplyScalar(new Fraction(1, 4), 0).toNumber()).toBe(0)
+    })
+})
+
+// ---------------------------------------------------------------------------
+// Equality
+// ---------------------------------------------------------------------------
+
+describe('Fraction.equals() / instance equals()', () => {
+    it('returns true for identical fractions', () => {
+        expect(Fraction.equals(new Fraction(1, 2), new Fraction(1, 2))).toBe(true)
+    })
+
+    it('returns true for equivalent unreduced fractions', () => {
+        expect(Fraction.equals(new Fraction(1, 2), new Fraction(2, 4))).toBe(true)
+    })
+
+    it('returns false for different values', () => {
+        expect(Fraction.equals(new Fraction(1, 2), new Fraction(1, 3))).toBe(false)
+    })
+
+    it('returns true for equivalent negative fractions', () => {
+        expect(Fraction.equals(new Fraction(-2, 4), new Fraction(-1, 2))).toBe(true)
+    })
+
+    it('instance form matches static form', () => {
+        const a = new Fraction(3, 6)
+        const b = new Fraction(1, 2)
+        expect(a.equals(b)).toBe(Fraction.equals(a, b))
     })
 })
 
