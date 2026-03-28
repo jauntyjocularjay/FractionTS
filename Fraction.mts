@@ -1,6 +1,6 @@
 import { InvalidIntegerError, DivideByZeroError } from './Errors.mjs'
 
-class Fraction {
+export default class Fraction {
     /** The numerator. Negative values represent a negative fraction. */
     private readonly n: number
 
@@ -52,13 +52,13 @@ class Fraction {
      * Enables implicit numeric coercion so that a {@link Fraction} can be used
      * directly in JavaScript arithmetic expressions.
      * The result of any such expression is a `number`, not a {@link Fraction}.
-     * IEEE 754 rounding applies — use {@link Fraction.reduce} before coercing
-     * if precision matters.
+     * IEEE 754 rounding applies — the result is an approximation if the rational
+     * value cannot be represented exactly in floating-point.
      * @returns The floating-point value of `n / d`.
      * @example
      * const half = new Fraction(1, 2)
-     * half + 1   // 1.5  (number)
-     * half > 0   // true (boolean)
+     * Number(half) + 1   // 1.5  (number)
+     * Number(half) > 0   // true (boolean)
      */
     valueOf(): number {
         return this.toNumber()
@@ -93,21 +93,24 @@ class Fraction {
 
     /**
      * Returns a new {@link Fraction} equal to the sum of two fractions.
-     * Uses the identity: a/b + c/d = (a·d + c·b) / (b·d).
+     * Finds the least common multiple (LCM) of the two denominators and scales
+     * each numerator by its respective factor before adding:
+     *   a/b + c/d = (a·(lcm/b) + c·(lcm/d)) / lcm, where lcm = lcm(b, d).
+     * When denominators are equal the scale factors are both 1 (no multiplication).
+     * When one denominator divides the other, only the smaller-denominator
+     * fraction is scaled.
      * @param a - The first {@link Fraction}.
      * @param b - The second {@link Fraction}.
      * @returns A new {@link Fraction} representing `a + b`.
      * @throws {InvalidIntegerError} If any intermediate value overflows safe integer range.
      */
     static add(a: Fraction, b: Fraction): Fraction {
-        const numerator = a.n * b.d + b.n * a.d
-        const denominator = a.d * b.d
-        if (
-            !Number.isSafeInteger(numerator) ||
-            !Number.isSafeInteger(denominator)
-        )
-            throw new InvalidIntegerError(numerator, denominator)
-        return new Fraction(numerator, denominator)
+        const gcd = Fraction.GCD(a.d, b.d)
+        const lcm = (a.d / gcd) * b.d
+        const scaleA = lcm / a.d
+        const scaleB = lcm / b.d
+        const numerator = a.n * scaleA + b.n * scaleB
+        return new Fraction(numerator, lcm)
     }
 
     /**
@@ -128,6 +131,144 @@ class Fraction {
     }
 
     /**
+     * Returns a new {@link Fraction} equal to the difference of two fractions.
+     * Negates `b` and delegates to {@link Fraction.add}.
+     * @param a - The {@link Fraction} to subtract from.
+     * @param b - The {@link Fraction} to subtract.
+     * @returns A new {@link Fraction} representing `a - b`.
+     * @throws {InvalidIntegerError} If any intermediate value overflows safe integer range.
+     */
+    static subtract(a: Fraction, b: Fraction): Fraction {
+        return Fraction.add(a, Fraction.negate(b))
+    }
+
+    /**
+     * Returns a new {@link Fraction} equal to the fraction minus an integer.
+     * Negates `scalar` and delegates to {@link Fraction.addScalar}.
+     * @param fraction - The {@link Fraction} to subtract from.
+     * @param scalar - A safe integer to subtract.
+     * @returns A new {@link Fraction} representing `fraction - scalar`.
+     * @throws {InvalidIntegerError} If the scalar is not a safe integer, or if the
+     * result overflows safe integer range.
+     */
+    static subtractScalar(fraction: Fraction, scalar: number): Fraction {
+        return Fraction.addScalar(fraction, -scalar)
+    }
+
+    /**
+     * Returns a new {@link Fraction} equal to the product of two fractions.
+     * Uses the identity: (a/b) · (c/d) = (a·c) / (b·d).
+     * @param a - The first {@link Fraction}.
+     * @param b - The second {@link Fraction}.
+     * @returns A new {@link Fraction} representing `a * b`.
+     * @throws {InvalidIntegerError} If any intermediate value overflows safe integer range.
+     */
+    static multiply(a: Fraction, b: Fraction): Fraction {
+        const numerator = a.n * b.n
+        const denominator = a.d * b.d
+        return new Fraction(numerator, denominator)
+    }
+
+    /**
+     * Returns a new {@link Fraction} equal to the fraction multiplied by a scalar integer.
+     * Only the numerator is scaled; the denominator is unchanged.
+     * Uses the identity: (a/b) · n = (a·n) / b.
+     * @param fraction - The {@link Fraction} to scale.
+     * @param scalar - A safe integer to multiply by.
+     * @returns A new {@link Fraction} representing `fraction * scalar`.
+     * @throws {DivideByZeroError} If `scalar` is zero.
+     * @throws {InvalidIntegerError} If `scalar` is not a safe integer, or if the
+     * result overflows safe integer range.
+     */
+    static multiplyScalar(fraction: Fraction, scalar: number): Fraction {
+        Fraction.ValidateScalar(scalar)
+        const numerator = fraction.n * scalar
+        if (!Number.isSafeInteger(numerator))
+            throw new InvalidIntegerError(numerator)
+        return new Fraction(numerator, fraction.d)
+    }
+
+    /**
+     * Returns a new {@link Fraction} equal to `a` divided by `b`.
+     * Takes the reciprocal of `b` and delegates to {@link Fraction.multiply}.
+     * @param a - The dividend {@link Fraction}.
+     * @param b - The divisor {@link Fraction}.
+     * @returns A new {@link Fraction} representing `a / b`.
+     * @throws {DivideByZeroError} If the numerator of `b` is zero.
+     * @throws {InvalidIntegerError} If any intermediate value overflows safe integer range.
+     */
+    static divide(a: Fraction, b: Fraction): Fraction {
+        return Fraction.multiply(a, Fraction.reciprocal(b))
+    }
+
+    /**
+     * Returns a new {@link Fraction} equal to the fraction divided by a scalar integer.
+     * Takes the reciprocal of `scalar` as a fraction and delegates to {@link Fraction.multiply}.
+     * @param fraction - The {@link Fraction} to divide.
+     * @param scalar - A non-zero safe integer to divide by.
+     * @returns A new {@link Fraction} representing `fraction / scalar`.
+     * @throws {DivideByZeroError} If `scalar` is zero.
+     * @throws {InvalidIntegerError} If `scalar` is not a safe integer.
+     */
+    static divideScalar(fraction: Fraction, scalar: number): Fraction {
+        Fraction.ValidateScalar(scalar)
+        return Fraction.multiply(fraction, new Fraction(1, scalar))
+    }
+
+    /**
+     * Returns the reciprocal of a {@link Fraction}, swapping numerator and denominator.
+     * @param other - The {@link Fraction} to invert.
+     * @returns A new {@link Fraction} equal to `1 / other`.
+     * @throws {DivideByZeroError} If the numerator of `other` is zero.
+     */
+    static reciprocal(other: Fraction): Fraction {
+        if (other.n === 0) throw new DivideByZeroError()
+        return new Fraction(other.d, other.n)
+    }
+
+    /**
+     * Returns a new {@link Fraction} reduced to lowest terms by dividing both
+     * numerator and denominator by their GCD.
+     * @param fraction - The {@link Fraction} to reduce.
+     * @returns A new {@link Fraction} in lowest terms.
+     * @example Fraction.reduce(new Fraction(4, 8)) // Fraction(1, 2)
+     */
+    static reduce(fraction: Fraction): Fraction {
+        const gcd = Fraction.GCD(fraction.n, fraction.d)
+        return new Fraction(fraction.n / gcd, fraction.d / gcd)
+    }
+
+    /**
+     * Returns a new {@link Fraction} with numerator and denominator both multiplied
+     * by `scalar`. The mathematical value is unchanged.
+     * @param fraction - The {@link Fraction} to expand.
+     * @param scalar - A non-zero safe integer to multiply by.
+     * @returns A new {@link Fraction} equal in value to `fraction` with scaled terms.
+     * @throws {DivideByZeroError} If `scalar` is zero.
+     * @throws {InvalidIntegerError} If `scalar` is not a safe integer, or if the
+     * result overflows safe integer range.
+     */
+    static expand(fraction: Fraction, scalar: number): Fraction {
+        Fraction.ValidateScalar(scalar)
+        const numerator = fraction.n * scalar
+        const denominator = fraction.d * scalar
+        return new Fraction(numerator, denominator)
+    }
+
+    /**
+     * The fractional remainder after removing the integer part.
+     * @returns A new {@link Fraction} representing `(n % d) / d`.
+     * @example new Fraction(7, 2).remainder // Fraction(1, 2)
+     */
+    get remainder(): Fraction {
+        return new Fraction(this.n % this.d, this.d)
+    }
+
+    // -------------------------------------------------------------------------
+    // Private helpers
+    // -------------------------------------------------------------------------
+
+    /**
      * Asserts that a numerator/denominator pair forms a legal {@link Fraction}.
      * @param numerator - The numerator to validate.
      * @param denominator - The denominator to validate.
@@ -142,17 +283,6 @@ class Fraction {
         )
             throw new InvalidIntegerError(numerator, denominator)
     }
-    /**
-     * Returns the reciprocal of a {@link Fraction}, swapping numerator and denominator.
-     * @param other - The {@link Fraction} to invert.
-     * @returns A new {@link Fraction} equal to `1 / other`.
-     * @throws {DivideByZeroError} If the numerator of `other` is zero.
-     */
-    static reciprocal(other: Fraction): Fraction {
-        if (other.n === 0) throw new DivideByZeroError()
-
-        return new Fraction(other.d, other.n)
-    }
 
     /**
      * Asserts that a scalar is a non-zero safe integer.
@@ -164,6 +294,7 @@ class Fraction {
         if (scalar === 0) throw new DivideByZeroError()
         if (!Number.isSafeInteger(scalar)) throw new InvalidIntegerError(scalar)
     }
+
     /**
      * Computes the greatest common divisor of two integers using the Euclidean algorithm.
      * @param a - First integer.
@@ -186,47 +317,5 @@ class Fraction {
         }
 
         return a
-    }
-    /**
-     * Returns a new {@link Fraction} reduced to lowest terms by dividing both
-     * numerator and denominator by their GCD.
-     * @param fraction - The {@link Fraction} to reduce.
-     * @returns A new {@link Fraction} in lowest terms.
-     * @example Fraction.reduce(new Fraction(4, 8)) // Fraction(1, 2)
-     */
-    static reduce(fraction: Fraction): Fraction {
-        const reducer: number = Fraction.GCD(fraction.n, fraction.d)
-        return new Fraction(fraction.n / reducer, fraction.d / reducer)
-    }
-
-    /**
-     * Returns a new {@link Fraction} with numerator and denominator both multiplied
-     * by `scalar`. The mathematical value is unchanged.
-     * @param fraction - The {@link Fraction} to expand.
-     * @param scalar - A non-zero safe integer to multiply by.
-     * @returns A new {@link Fraction} equal in value to `fraction` with scaled terms.
-     * @throws {DivideByZeroError} If `scalar` is zero.
-     * @throws {InvalidIntegerError} If `scalar` is not a safe integer, or if the
-     * result overflows safe integer range.
-     */
-    static expand(fraction: Fraction, scalar: number): Fraction {
-        Fraction.ValidateScalar(scalar)
-        const numerator = fraction.n * scalar
-        const denominator = fraction.d * scalar
-        if (
-            !Number.isSafeInteger(numerator) ||
-            !Number.isSafeInteger(denominator)
-        )
-            throw new InvalidIntegerError(numerator, denominator)
-
-        return new Fraction(numerator, denominator)
-    }
-    /**
-     * The fractional remainder after removing the integer part.
-     * @returns A new {@link Fraction} representing `(n % d) / d`.
-     * @example new Fraction(7, 2).remainder // Fraction(1, 2)
-     */
-    get remainder(): Fraction {
-        return new Fraction(this.n % this.d, this.d)
     }
 }

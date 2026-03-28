@@ -6,7 +6,26 @@
     "scripts": {
         "dev": "npm i && git submodule update --init --recursive",
         "build": "tsc",
-        "test": "clear && mocha test --exit"
+        "test": "clear && node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage"
+    },
+    "type": "module",
+    "jest": {
+        "extensionsToTreatAsEsm": [".ts", ".mts"],
+        "moduleNameMapper": {
+            "^(.*)\\.mjs$": "$1.mts"
+        },
+        "moduleFileExtensions": [
+            "js",
+            "mjs",
+            "cjs",
+            "ts",
+            "mts",
+            "json",
+            "node"
+        ],
+        "transform": {
+            "^.+\\.m?[jt]s$": "babel-jest"
+        }
     },
     "keywords": [],
     "author": "jauntyjocularjay",
@@ -16,9 +35,11 @@
         "node-fetch": "^3.2.6"
     },
     "devDependencies": {
+        "@babel/preset-env": "^7.26.0",
         "@babel/preset-typescript": "^7.28.5",
-        "chai": "^6.2.2",
-        "mocha": "^11.3.0",
+        "@types/chai": "^5.2.3",
+        "@types/jest": "^30.0.0",
+        "jest": "^30.3.0",
         "typescript": "^6.0.2"
     }
 }

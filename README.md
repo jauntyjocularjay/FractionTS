@@ -21,7 +21,7 @@ This runs `tsc` and emits compiled `.mjs` files and `.d.ts` type declarations to
 ### 2. Import in JavaScript
 
 ```js
-import { Fraction } from './dist/Fraction.mjs'
+import Fraction from './dist/Fraction.mjs'
 
 const half = new Fraction(1, 2)
 console.log(half.toString())   // '1 / 2'
@@ -30,9 +30,28 @@ console.log(half.toNumber())   // 0.5
 
 Requires Node.js 14.8+ with `"type": "module"` in your project's `package.json`, or a bundler that supports ES modules.
 
+## Using in a CommonJS project
+
+`require()` cannot load `.mjs` files. The only native option in a CJS project is dynamic `import()`, which is asynchronous:
+
+```js
+// CommonJS project (.js without "type": "module")
+async function main() {
+    const { default: Fraction } = await import('./path/to/dist/Fraction.mjs')
+    const half = new Fraction(1, 2)
+    console.log(half.toString())  // '1 / 2'
+}
+
+main()
+```
+
+Dynamic `import()` returns a Promise, so all code that uses `Fraction` must live inside an `async` function or a `.then()` chain. Top-level `await` is not available in CJS modules.
+
+If the async wrapping is impractical, the alternative is to use a bundler such as [esbuild](https://esbuild.github.io/) or [Webpack](https://webpack.js.org/) to convert the ESM output to CJS format before distributing or consuming it.
+
 ---
 
-## Construction
+## Constructor
 
 ```ts
 new Fraction(numerator: number, denominator: number)
@@ -63,20 +82,20 @@ Fraction.Zero  // 0/1 — prefer this over new Fraction(0, 1)
 
 ### `valueOf()`
 
-Allows a `Fraction` to be used directly in numeric expressions:
+Allows a `Fraction` to be used directly in numeric expressions in JavaScript. TypeScript requires an explicit `Number()` cast with the `+` operator:
 
 ```ts
 const half = new Fraction(1, 2)
-half + 1        // 1.5  — result is a number, not a Fraction
-half * 4        // 2
-half > 0.25     // true
+Number(half) + 1   // 1.5  — result is a number, not a Fraction
+half * 4           // 2
+half > 0.25        // true
 ```
 
-**The result of any such expression is a `number`, not a `Fraction`.** To return to exact rational arithmetic, construct a new `Fraction` from the result at a precision you choose:
+**The result of any such expression is a `number`, not a `Fraction`.** For exact rational arithmetic, use the static methods instead:
 
 ```ts
-const result = half + new Fraction(1, 3)  // 0.8333333333333333 (number)
-const exact  = Fraction.add(half, new Fraction(1, 3))  // Fraction(5, 6)
+const result = Number(half) + Number(new Fraction(1, 3))  // 0.8333333333333333 (number)
+const exact  = Fraction.add(half, new Fraction(1, 3))     // Fraction(5, 6)
 ```
 
 ### `remainder` (getter)
@@ -95,13 +114,13 @@ new Fraction(7, 2).remainder  // Fraction(1, 2)  →  0.5
 
 ### `Fraction.add(a, b)`
 
-Returns a new `Fraction` equal to the sum of two fractions.
+Returns a new `Fraction` equal to the sum of two fractions. Finds the LCM of the denominators and scales each numerator before adding, so the result denominator is always the LCM — not the product:
 
-$$\frac{a}{b} + \frac{c}{d} = \frac{a \cdot d + c \cdot b}{b \cdot d}$$
+$$\frac{a}{b} + \frac{c}{d} = \frac{a \cdot \frac{\text{lcm}}{b} + c \cdot \frac{\text{lcm}}{d}}{\text{lcm}}, \quad \text{lcm} = \frac{b \cdot d}{\gcd(b,d)}$$
 
 ```ts
 Fraction.add(new Fraction(1, 4), new Fraction(1, 4))  // Fraction(2, 4)  →  0.5
-Fraction.add(new Fraction(1, 3), new Fraction(1, 6))  // Fraction(9, 18) →  0.5
+Fraction.add(new Fraction(1, 3), new Fraction(1, 6))  // Fraction(3, 6)  →  0.5
 ```
 
 Throws `InvalidIntegerError` if any intermediate value overflows safe integer range. Use `Fraction.reduce()` on inputs beforehand if overflow is a concern.
@@ -118,6 +137,78 @@ Fraction.addScalar(new Fraction(1, 4), -1)  // Fraction(-3, 4) → -0.75
 ```
 
 Throws `InvalidIntegerError` if `scalar` is not a safe integer or if the result overflows. Floats must be converted to a fraction of the desired precision before use.
+
+### `Fraction.subtract(a, b)`
+
+Returns a new `Fraction` equal to the difference of two fractions. Negates `b` and delegates to `Fraction.add`.
+
+$$\frac{a}{b} - \frac{c}{d} = \frac{a}{b} + \left(-\frac{c}{d}\right)$$
+
+```ts
+Fraction.subtract(new Fraction(3, 4), new Fraction(1, 4))  // Fraction(2, 4)  →  0.5
+Fraction.subtract(new Fraction(1, 4), new Fraction(3, 4))  // Fraction(-2, 4) → -0.5
+```
+
+Throws `InvalidIntegerError` if any intermediate value overflows safe integer range.
+
+### `Fraction.subtractScalar(fraction, scalar)`
+
+Returns a new `Fraction` equal to the fraction minus an integer. Negates `scalar` and delegates to `Fraction.addScalar`.
+
+```ts
+Fraction.subtractScalar(new Fraction(5, 4), 1)   // Fraction(1, 4)  →  0.25
+Fraction.subtractScalar(new Fraction(1, 4), -1)  // Fraction(5, 4)  →  1.25
+```
+
+Throws `InvalidIntegerError` if `scalar` is not a safe integer or if the result overflows.
+
+### `Fraction.multiply(a, b)`
+
+Returns a new `Fraction` equal to the product of two fractions.
+
+$$\frac{a}{b} \cdot \frac{c}{d} = \frac{a \cdot c}{b \cdot d}$$
+
+```ts
+Fraction.multiply(new Fraction(2, 3), new Fraction(3, 4))  // Fraction(6, 12) → 0.5
+```
+
+Throws `InvalidIntegerError` if any intermediate value overflows safe integer range.
+
+### `Fraction.multiplyScalar(fraction, scalar)`
+
+Returns a new `Fraction` with the numerator scaled by an integer. The denominator is unchanged.
+
+$$\frac{a}{b} \cdot n = \frac{a \cdot n}{b}$$
+
+```ts
+Fraction.multiplyScalar(new Fraction(1, 4), 3)   // Fraction(3, 4)  → 0.75
+Fraction.multiplyScalar(new Fraction(1, 4), -1)  // Fraction(-1, 4) → -0.25
+```
+
+Throws `DivideByZeroError` if `scalar` is zero. Throws `InvalidIntegerError` if `scalar` is not a safe integer or if the result overflows.
+
+### `Fraction.divide(a, b)`
+
+Returns a new `Fraction` equal to `a` divided by `b`. Takes the reciprocal of `b` and delegates to `Fraction.multiply`.
+
+$$\frac{a}{b} \div \frac{c}{d} = \frac{a}{b} \cdot \frac{d}{c}$$
+
+```ts
+Fraction.divide(new Fraction(1, 2), new Fraction(3, 4))  // Fraction(4, 6) → 0.667
+```
+
+Throws `DivideByZeroError` if the numerator of `b` is zero.
+
+### `Fraction.divideScalar(fraction, scalar)`
+
+Returns a new `Fraction` divided by an integer. Constructs `1/scalar` and delegates to `Fraction.multiply`.
+
+```ts
+Fraction.divideScalar(new Fraction(3, 4), 3)   // Fraction(3, 12) → 0.25
+Fraction.divideScalar(new Fraction(3, 4), -1)  // Fraction(-3, 4) → -0.75
+```
+
+Throws `DivideByZeroError` if `scalar` is zero. Throws `InvalidIntegerError` if `scalar` is not a safe integer.
 
 ### `Fraction.from(other)`
 
@@ -180,4 +271,4 @@ try {
 
 ## Precision note
 
-This class operates on JavaScript's `number` type. Inputs and results are validated against `Number.isSafeInteger` (i.e. values within $\pm(2^{53} - 1)$), but intermediate floating-point arithmetic in `toNumber()` is subject to standard IEEE 754 rounding. For exact rational arithmetic, reduce fractions before converting to a float.
+This class operates on JavaScript's `number` type. Inputs and results are validated against `Number.isSafeInteger` (i.e. values within $\pm(2^{53} - 1)$), but intermediate floating-point arithmetic in `toNumber()` is subject to standard IEEE 754 rounding. If the rational value cannot be represented exactly in floating-point (e.g. `1/3`), the result of `toNumber()` or `valueOf()` will be an approximation regardless of whether the fraction is in lowest terms.
