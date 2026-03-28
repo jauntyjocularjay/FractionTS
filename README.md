@@ -32,14 +32,33 @@ Requires Node.js 14.8+ with `"type": "module"` in your project's `package.json`,
 
 ## Using in a CommonJS project
 
-`require()` cannot load `.mjs` files. The only native option in a CJS project is dynamic `import()`, which is asynchronous:
+`require()` cannot load `.mjs` files. The only native option in a CJS project is dynamic `import()`, which is asynchronous.
+
+Import only what you need. The error classes are optional — only include them if you intend to catch and identify them by type:
+
+```js
+// Fraction only
+const { default: Fraction } = await import('./path/to/dist/Fraction.mjs')
+
+// Fraction + error classes (for instanceof checks in try/catch)
+const { default: Fraction, DivideByZeroError, InvalidIntegerError } = await import('./path/to/dist/Fraction.mjs')
+```
+
+Full example:
 
 ```js
 // CommonJS project (.js without "type": "module")
 async function main() {
-    const { default: Fraction } = await import('./path/to/dist/Fraction.mjs')
+    const { default: Fraction, DivideByZeroError } = await import('./path/to/dist/Fraction.mjs')
+
     const half = new Fraction(1, 2)
     console.log(half.toString())  // '1 / 2'
+
+    try {
+        new Fraction(1, 0)
+    } catch (e) {
+        if (e instanceof DivideByZeroError) console.log('caught:', e.message)
+    }
 }
 
 main()
@@ -212,7 +231,13 @@ Throws `DivideByZeroError` if `scalar` is zero. Throws `InvalidIntegerError` if 
 
 ### `Fraction.from(other)`
 
-Creates a copy of an existing `Fraction`.
+Creates a defensive copy of an existing `Fraction`. Although `Fraction` is immutable, this is useful when a variable needs to be rebound to a logically independent instance rather than sharing a reference to the same object — for example, when storing a snapshot of a value that may later be replaced by a different `Fraction`.
+
+```ts
+let a = new Fraction(1, 2)
+let snapshot = Fraction.from(a)  // independent copy
+a = Fraction.add(a, new Fraction(1, 4))  // rebind a; snapshot is unaffected
+```
 
 ### `Fraction.negate(other)`
 
@@ -252,7 +277,7 @@ Throws `DivideByZeroError` if `scalar` is zero. Throws `InvalidIntegerError` if 
 
 ## Errors
 
-Both error classes extend `RangeError` and are exported from `Errors.mts`.
+Both error classes extend `RangeError`. They are defined in `Errors.mts` and re-exported from `Fraction.mts`, so a single import covers everything:
 
 | Error | Thrown when |
 |---|---|
@@ -260,6 +285,10 @@ Both error classes extend `RangeError` and are exported from `Errors.mts`.
 | `InvalidIntegerError` | Any argument is not a safe integer, or a result overflows |
 
 ```ts
+// Preferred — one import for everything
+import Fraction, { DivideByZeroError, InvalidIntegerError } from './Fraction.mts'
+
+// Also valid — import from the source file directly
 import { DivideByZeroError, InvalidIntegerError } from './Errors.mts'
 
 try {

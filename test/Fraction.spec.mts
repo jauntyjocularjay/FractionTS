@@ -1,5 +1,4 @@
-import Fraction from '../Fraction.mts'
-import { DivideByZeroError, InvalidIntegerError } from '../Errors.mts'
+import {default as Fraction, DivideByZeroError, InvalidIntegerError} from '../Fraction.mts'
 
 // ---------------------------------------------------------------------------
 // Helpers

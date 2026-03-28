@@ -1,5 +1,7 @@
 import { InvalidIntegerError, DivideByZeroError } from './Errors.mjs'
 
+export { InvalidIntegerError, DivideByZeroError }
+
 export default class Fraction {
     /** The numerator. Negative values represent a negative fraction. */
     private readonly n: number
@@ -75,13 +77,18 @@ export default class Fraction {
     }
 
     /**
-     * Creates a new {@link Fraction} from an existing one.
-     * @param other - The source {@link Fraction} to construct from.
+     * Creates a defensive copy of an existing {@link Fraction}.
+     * Although {@link Fraction} is immutable, this is useful when a variable needs
+     * to be rebound to a logically independent instance rather than sharing a
+     * reference to the same object — for example, when storing a snapshot of a
+     * value that may later be replaced by a different {@link Fraction}.
+     * @param other - The source {@link Fraction} to copy.
      * @returns A new {@link Fraction} with the same numerator and denominator as `other`.
      */
     static from(other: Fraction): Fraction {
         return new Fraction(other.n, other.d)
     }
+
     /**
      * Returns a new {@link Fraction} with the sign of the numerator flipped.
      * @param other - The {@link Fraction} to negate.

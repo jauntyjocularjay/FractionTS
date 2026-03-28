@@ -1,12 +1,19 @@
 {
     "name": "fractionts",
     "version": "1.0.0",
-    "description": "",
-    "main": "Fraction.mts",
+    "description": "An implementation of fractions for Typescript and Javascript.",
+    "main": "./dist/Fraction.mjs",
+    "exports": {
+        ".": {
+            "import": "./dist/Fraction.mjs",
+            "types": "./dist/Fraction.d.ts"
+        }
+    },
     "scripts": {
         "dev": "npm i && git submodule update --init --recursive",
         "build": "tsc",
-        "test": "clear && node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage"
+        "test": "clear && node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
+        "test:cjs": "npm run build && node test/cjs-compat.cjs"
     },
     "type": "module",
     "jest": {
@@ -28,19 +35,18 @@
         ],
         "transform": {
             "^.+\\.m?[jt]s$": "babel-jest"
-        }
+        },
+        "coverageDirectory": "./docs"
     },
     "keywords": [],
     "author": "jauntyjocularjay",
     "license": "MIT",
     "dependencies": {
-        "@types/node": "^18.0.6",
-        "node-fetch": "^3.2.6"
+        "@types/node": "^18.0.6"
     },
     "devDependencies": {
         "@babel/preset-env": "^7.29.2",
         "@babel/preset-typescript": "^7.28.5",
-        "@types/chai": "^5.2.3",
         "@types/jest": "^30.0.0",
         "jest": "^30.3.0",
         "typescript": "^6.0.2"
