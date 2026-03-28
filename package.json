@@ -1,8 +1,8 @@
 {
-    "name": "fractionjs",
+    "name": "fractionts",
     "version": "1.0.0",
     "description": "",
-    "main": "fraction.mjs",
+    "main": "Fraction.mts",
     "scripts": {
         "dev": "npm i && git submodule update --init --recursive",
         "build": "tsc",
@@ -10,7 +10,10 @@
     },
     "type": "module",
     "jest": {
-        "extensionsToTreatAsEsm": [".ts", ".mts"],
+        "extensionsToTreatAsEsm": [
+            ".ts",
+            ".mts"
+        ],
         "moduleNameMapper": {
             "^(.*)\\.mjs$": "$1.mts"
         },
@@ -35,7 +38,7 @@
         "node-fetch": "^3.2.6"
     },
     "devDependencies": {
-        "@babel/preset-env": "^7.26.0",
+        "@babel/preset-env": "^7.29.2",
         "@babel/preset-typescript": "^7.28.5",
         "@types/chai": "^5.2.3",
         "@types/jest": "^30.0.0",

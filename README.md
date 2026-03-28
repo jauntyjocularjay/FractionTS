@@ -272,3 +272,21 @@ try {
 ## Precision note
 
 This class operates on JavaScript's `number` type. Inputs and results are validated against `Number.isSafeInteger` (i.e. values within $\pm(2^{53} - 1)$), but intermediate floating-point arithmetic in `toNumber()` is subject to standard IEEE 754 rounding. If the rational value cannot be represented exactly in floating-point (e.g. `1/3`), the result of `toNumber()` or `valueOf()` will be an approximation regardless of whether the fraction is in lowest terms.
+
+
+## Tools and Acknowledgement
+
+- Author @jauntyjocularjay
+    - Planning
+    - Setup
+    - Copilot Generated Code Review
+    - Constructor
+    - Custom Errors
+    - Validation Methods
+    - Expand Method
+
+- GitHub Copilot via VSCode
+    - Documentation
+    - Test Suite
+    - Mathematical Operations
+    - Reduce Algorithm
