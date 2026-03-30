@@ -12,9 +12,9 @@
     "scripts": {
         "dev": "npm i && git submodule update --init --recursive",
         "build": "tsc",
-        "test": "clear && node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
+        "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
         "test:cjs": "npm run build && node test/cjs-compat.cjs",
-        "test:all": "npm test && npm run test:cjs",
+        "test:all": "clear && npm test && npm run test:cjs",
         "eslint": "eslint Fraction.mts Errors.mts"
     },
     "type": "module",
@@ -50,9 +50,6 @@
         "@babel/preset-env": "^7.29.2",
         "@babel/preset-typescript": "^7.28.5",
         "@types/jest": "^30.0.0",
-        "@typescript-eslint/eslint-plugin": "^8.57.2",
-        "@typescript-eslint/parser": "^8.57.2",
-        "eslint": "^10.1.0",
         "jest": "^30.3.0",
         "typescript": "^6.0.2"
     }

@@ -21,7 +21,7 @@ export default class Fraction {
      * @throws {DivideByZeroError} If `denominator` is zero.
      * @throws {InvalidIntegerError} If either argument is not a safe integer.
      */
-    constructor(numerator: number, denominator: number) {
+    constructor(numerator: number, denominator: number = 1) {
         let temp_numerator = numerator
         let temp_denominator = denominator
 
