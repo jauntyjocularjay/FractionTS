@@ -10,12 +10,11 @@
         }
     },
     "scripts": {
-        "dev": "npm i && git submodule update --init --recursive",
+        "dev": "npm i",
         "build": "tsc",
         "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
         "test:cjs": "npm run build && node test/cjs-compat.cjs",
-        "test:all": "clear && npm test && npm run test:cjs",
-        "eslint": "eslint Fraction.mts Errors.mts"
+        "test:all": "clear && npm test && npm run test:cjs"
     },
     "type": "module",
     "jest": {
