@@ -176,27 +176,27 @@ describe('Fraction.expand()', () => {
 // Arithmetic
 // ---------------------------------------------------------------------------
 
-describe('Fraction.add()', () => {
+describe('Fraction.Add()', () => {
     it('adds two fractions with the same denominator', () => {
-        eqFrac(Fraction.add(new Fraction(1, 4), new Fraction(1, 4)), 2, 4)
+        eqFrac(Fraction.addFraction(new Fraction(1, 4), new Fraction(1, 4)), 2, 4)
     })
 
     it('adds fractions where one denominator divides the other', () => {
         // 1/2 + 1/4: lcm=4, only 1/2 is scaled → 2/4 + 1/4 = 3/4
-        eqFrac(Fraction.add(new Fraction(1, 2), new Fraction(1, 4)), 3, 4)
+        eqFrac(Fraction.addFraction(new Fraction(1, 2), new Fraction(1, 4)), 3, 4)
     })
 
     it('adds fractions with coprime denominators', () => {
         // 1/3 + 1/5: lcm=15, both scaled → 5/15 + 3/15 = 8/15
-        eqFrac(Fraction.add(new Fraction(1, 3), new Fraction(1, 5)), 8, 15)
+        eqFrac(Fraction.addFraction(new Fraction(1, 3), new Fraction(1, 5)), 8, 15)
     })
 
     it('adds positive and negative fraction', () => {
-        expect(Fraction.add(new Fraction(3, 4), new Fraction(-1, 4)).toNumber()).toBe(0.5)
+        expect(Fraction.addFraction(new Fraction(3, 4), new Fraction(-1, 4)).toNumber()).toBe(0.5)
     })
 })
 
-describe('Fraction.addScalar()', () => {
+describe('Fraction.AddScalar()', () => {
     it('adds positive integer', () => {
         eqFrac(Fraction.addScalar(new Fraction(1, 4), 1), 5, 4)
     })
@@ -212,21 +212,21 @@ describe('Fraction.addScalar()', () => {
 
 describe('Fraction.subtract()', () => {
     it('subtracts fractions with the same denominator', () => {
-        eqFrac(Fraction.subtract(new Fraction(3, 4), new Fraction(1, 4)), 2, 4)
+        eqFrac(Fraction.subtractFraction(new Fraction(3, 4), new Fraction(1, 4)), 2, 4)
     })
 
     it('subtracts fractions where one denominator divides the other', () => {
         // 3/4 - 1/2: lcm=4, only 1/2 is scaled → 3/4 - 2/4 = 1/4
-        eqFrac(Fraction.subtract(new Fraction(3, 4), new Fraction(1, 2)), 1, 4)
+        eqFrac(Fraction.subtractFraction(new Fraction(3, 4), new Fraction(1, 2)), 1, 4)
     })
 
     it('subtracts fractions with coprime denominators', () => {
         // 1/3 - 1/5: lcm=15, both scaled → 5/15 - 3/15 = 2/15
-        eqFrac(Fraction.subtract(new Fraction(1, 3), new Fraction(1, 5)), 2, 15)
+        eqFrac(Fraction.subtractFraction(new Fraction(1, 3), new Fraction(1, 5)), 2, 15)
     })
 
     it('produces negative result when smaller minus larger', () => {
-        expect(Fraction.subtract(new Fraction(1, 4), new Fraction(3, 4)).toNumber()).toBe(-0.5)
+        expect(Fraction.subtractFraction(new Fraction(1, 4), new Fraction(3, 4)).toNumber()).toBe(-0.5)
     })
 })
 
@@ -240,21 +240,21 @@ describe('Fraction.subtractScalar()', () => {
     })
 })
 
-describe('Fraction.multiply()', () => {
+describe('Fraction.Multiply()', () => {
     it('multiplies two positive fractions', () => {
-        eqFrac(Fraction.multiply(new Fraction(2, 3), new Fraction(3, 4)), 6, 12)
+        eqFrac(Fraction.multiplyFraction(new Fraction(2, 3), new Fraction(3, 4)), 6, 12)
     })
 
     it('multiplies positive by negative', () => {
-        expect(Fraction.multiply(new Fraction(1, 2), new Fraction(-1, 2)).toNumber()).toBe(-0.25)
+        expect(Fraction.multiplyFraction(new Fraction(1, 2), new Fraction(-1, 2)).toNumber()).toBe(-0.25)
     })
 
     it('multiplying by Zero gives Zero', () => {
-        expect(Fraction.multiply(new Fraction(3, 4), Fraction.Zero).toNumber()).toBe(0)
+        expect(Fraction.multiplyFraction(new Fraction(3, 4), Fraction.Zero).toNumber()).toBe(0)
     })
 })
 
-describe('Fraction.multiplyScalar()', () => {
+describe('Fraction.MultiplyScalar()', () => {
     it('scales numerator by positive scalar', () => {
         eqFrac(Fraction.multiplyScalar(new Fraction(1, 4), 3), 3, 4)
     })
@@ -296,21 +296,21 @@ describe('Fraction.equals() / instance equals()', () => {
     })
 })
 
-describe('Fraction.divide()', () => {
+describe('Fraction.Divide()', () => {
     it('divides two fractions', () => {
-        eqFrac(Fraction.divide(new Fraction(1, 2), new Fraction(3, 4)), 4, 6)
+        eqFrac(Fraction.divideFraction(new Fraction(1, 2), new Fraction(3, 4)), 4, 6)
     })
 
     it('dividing by itself gives 1', () => {
-        expect(Fraction.divide(new Fraction(3, 4), new Fraction(3, 4)).toNumber()).toBe(1)
+        expect(Fraction.divideFraction(new Fraction(3, 4), new Fraction(3, 4)).toNumber()).toBe(1)
     })
 
     it('throws DivideByZeroError when divisor numerator is 0', () => {
-        expect(() => Fraction.divide(new Fraction(1, 2), Fraction.Zero)).toThrow(DivideByZeroError)
+        expect(() => Fraction.divideFraction(new Fraction(1, 2), Fraction.Zero)).toThrow(DivideByZeroError)
     })
 })
 
-describe('Fraction.divideScalar()', () => {
+describe('Fraction.DivideScalar()', () => {
     it('divides by positive integer', () => {
         eqFrac(Fraction.divideScalar(new Fraction(3, 4), 3), 3, 12)
     })
@@ -333,13 +333,13 @@ describe('instance wrapper methods delegate to static counterparts', () => {
     const b = new Fraction(1, 4)
 
     it('add()', ()          => { eqFrac(a.add(b),             3, 4) })
-    it('addScalar()', ()    => { eqFrac(a.addScalar(1),       3, 2) })
-    it('subtract()', ()     => { eqFrac(a.subtract(b),        1, 4) })
-    it('subtractScalar()',  () => { eqFrac(a.subtractScalar(1), -1, 2) })
+    it('addScalar()', ()    => { eqFrac(a.add(1),       3, 2) })
+    it('subtract() fraction', ()     => { eqFrac(a.subtract(b),        1, 4) })
+    it('subtract() scalar',  () => { eqFrac(a.subtract(1), -1, 2) })
     it('multiply()', ()     => { eqFrac(a.multiply(b),         1, 8) })
-    it('multiplyScalar()', () => { eqFrac(a.multiplyScalar(3),  3, 2) })
+    it('multiplyScalar()', () => { eqFrac(a.multiply(3),  3, 2) })
     it('divide()', ()       => { eqFrac(a.divide(b),           4, 2) })
-    it('divideScalar()', () => { eqFrac(a.divideScalar(2),     1, 4) })
+    it('divideScalar()', () => { eqFrac(a.divide(2),     1, 4) })
     it('negate()', ()       => { eqFrac(a.negate(),           -1, 2) })
     it('reciprocal()', ()   => { eqFrac(a.reciprocal(),        2, 1) })
     it('reduce()', ()       => { eqFrac(new Fraction(4, 8).reduce(), 1, 2) })
@@ -351,7 +351,7 @@ describe('chaining', () => {
         // (1/2 + 1/4) * 2 = 3/4 * 2 = 6/4, reduced = 3/2
         const result = new Fraction(1, 2)
             .add(new Fraction(1, 4))
-            .multiplyScalar(2)
+            .multiply(2)
             .reduce()
         eqFrac(result, 3, 2)
     })

@@ -6,7 +6,7 @@ An immutable TypeScript class representing a rational number as a numerator/deno
 
 - The denominator is always normalised to a positive integer at construction time. Negative fractions are represented by a negative numerator.
 - All operations return new `Fraction` instances — no method mutates state.
-- All operations are available as both static methods and instance methods. The static form (`Fraction.add(a, b)`) makes it visually unambiguous that a new value is produced. The instance form (`a.add(b)`) supports fluent chaining for multi-step calculations. Each instance method is a one-line delegate to its static counterpart — the static methods are the single source of truth.
+- All operations are available as both static methods and instance methods. The static form (`Fraction.addFraction(a, b)`) makes it visually unambiguous that a new value is produced. The instance form (`a.add(b)`) supports fluent chaining for multi-step calculations. The four arithmetic instance methods (`add`, `subtract`, `multiply`, `divide`) each accept either a `Fraction` or a plain integer and dispatch to the appropriate static method. All other instance methods are one-line delegates to their static counterparts — the static methods are the single source of truth.
 - Inputs are validated eagerly; errors are thrown immediately rather than propagating silently.
 
 ## Using in a JavaScript project
@@ -102,29 +102,30 @@ Fraction.Zero  // 0/1 — prefer this over new Fraction(0, 1)
 | `toInteger()` | `number` | Integer part, truncated toward zero |
 | `valueOf()` | `number` | Enables implicit numeric coercion (see below) |
 | `remainder` | `Fraction` | Fractional part after removing the integer portion |
+| `equals(other)` | `boolean` | `true` if this fraction equals `other` after reduction |
 
 ### Chainable arithmetic
 
-Each method below is an instance wrapper around its static counterpart. They exist purely for call-site readability when chaining multiple operations:
+The four arithmetic instance methods each accept either a `Fraction` or a plain integer, dispatching to the appropriate static method automatically. All other instance methods delegate directly to their static counterparts:
 
-| Method | Static equivalent |
+| Method | `Fraction` argument | `number` argument |
+|---|---|---|
+| `add(value)` | `Fraction.addFraction(this, value)` | `Fraction.addScalar(this, value)` |
+| `subtract(value)` | `Fraction.subtractFraction(this, value)` | `Fraction.subtractScalar(this, value)` |
+| `multiply(value)` | `Fraction.multiplyFraction(this, value)` | `Fraction.multiplyScalar(this, value)` |
+| `divide(value)` | `Fraction.divideFraction(this, value)` | `Fraction.divideScalar(this, value)` |
+
+| Method | Delegates to |
 |---|---|
-| `add(other)` | `Fraction.add(this, other)` |
-| `addScalar(scalar)` | `Fraction.addScalar(this, scalar)` |
-| `subtract(other)` | `Fraction.subtract(this, other)` |
-| `subtractScalar(scalar)` | `Fraction.subtractScalar(this, scalar)` |
-| `multiply(other)` | `Fraction.multiply(this, other)` |
-| `multiplyScalar(scalar)` | `Fraction.multiplyScalar(this, scalar)` |
-| `divide(other)` | `Fraction.divide(this, other)` |
-| `divideScalar(scalar)` | `Fraction.divideScalar(this, scalar)` |
 | `negate()` | `Fraction.negate(this)` |
 | `reciprocal()` | `Fraction.reciprocal(this)` |
 | `reduce()` | `Fraction.reduce(this)` |
 | `expand(scalar)` | `Fraction.expand(this, scalar)` |
+| `equals(other)` | `Fraction.equals(this, other)` |
 
 ```ts
 // Static form — clear that a new value is produced
-const result = Fraction.reduce(Fraction.add(Fraction.multiply(a, b), c))
+const result = Fraction.reduce(Fraction.addFraction(Fraction.multiplyFraction(a, b), c))
 
 // Instance form — left-to-right, chainable
 const result = a.multiply(b).add(c).reduce()
@@ -145,7 +146,7 @@ half > 0.25        // true
 
 ```ts
 const result = Number(half) + Number(new Fraction(1, 3))  // 0.8333333333333333 (number)
-const exact  = Fraction.add(half, new Fraction(1, 3))     // Fraction(5, 6)
+const exact  = Fraction.addFraction(half, new Fraction(1, 3))     // Fraction(5, 6)
 ```
 
 ### `remainder` (getter)
@@ -163,15 +164,15 @@ new Fraction(7, 2).remainder.reduce() // chaining works here too
 
 ## Static methods
 
-### `Fraction.add(a, b)`
+### `Fraction.addFraction(a, b)`
 
 Returns a new `Fraction` equal to the sum of two fractions. Finds the LCM of the denominators and scales each numerator before adding, so the result denominator is always the LCM — not the product:
 
 $$\frac{a}{b} + \frac{c}{d} = \frac{a \cdot \frac{\text{lcm}}{b} + c \cdot \frac{\text{lcm}}{d}}{\text{lcm}}, \quad \text{lcm} = \frac{b \cdot d}{\gcd(b,d)}$$
 
 ```ts
-Fraction.add(new Fraction(1, 4), new Fraction(1, 4))  // Fraction(2, 4)  →  0.5
-Fraction.add(new Fraction(1, 3), new Fraction(1, 6))  // Fraction(3, 6)  →  0.5
+Fraction.addFraction(new Fraction(1, 4), new Fraction(1, 4))  // Fraction(2, 4)  →  0.5
+Fraction.addFraction(new Fraction(1, 3), new Fraction(1, 6))  // Fraction(3, 6)  →  0.5
 ```
 
 Throws `InvalidIntegerError` if any intermediate value overflows safe integer range. Use `Fraction.reduce()` on inputs beforehand if overflow is a concern.
@@ -189,15 +190,15 @@ Fraction.addScalar(new Fraction(1, 4), -1)  // Fraction(-3, 4) → -0.75
 
 Throws `InvalidIntegerError` if `scalar` is not a safe integer or if the result overflows. Floats must be converted to a fraction of the desired precision before use.
 
-### `Fraction.subtract(a, b)`
+### `Fraction.subtractFraction(a, b)`
 
-Returns a new `Fraction` equal to the difference of two fractions. Negates `b` and delegates to `Fraction.add`.
+Returns a new `Fraction` equal to the difference of two fractions. Negates `b` and delegates to `Fraction.addFraction`.
 
 $$\frac{a}{b} - \frac{c}{d} = \frac{a}{b} + \left(-\frac{c}{d}\right)$$
 
 ```ts
-Fraction.subtract(new Fraction(3, 4), new Fraction(1, 4))  // Fraction(2, 4)  →  0.5
-Fraction.subtract(new Fraction(1, 4), new Fraction(3, 4))  // Fraction(-2, 4) → -0.5
+Fraction.subtractFraction(new Fraction(3, 4), new Fraction(1, 4))  // Fraction(2, 4)  →  0.5
+Fraction.subtractFraction(new Fraction(1, 4), new Fraction(3, 4))  // Fraction(-2, 4) → -0.5
 ```
 
 Throws `InvalidIntegerError` if any intermediate value overflows safe integer range.
@@ -213,14 +214,14 @@ Fraction.subtractScalar(new Fraction(1, 4), -1)  // Fraction(5, 4)  →  1.25
 
 Throws `InvalidIntegerError` if `scalar` is not a safe integer or if the result overflows.
 
-### `Fraction.multiply(a, b)`
+### `Fraction.multiplyFraction(a, b)`
 
 Returns a new `Fraction` equal to the product of two fractions.
 
 $$\frac{a}{b} \cdot \frac{c}{d} = \frac{a \cdot c}{b \cdot d}$$
 
 ```ts
-Fraction.multiply(new Fraction(2, 3), new Fraction(3, 4))  // Fraction(6, 12) → 0.5
+Fraction.multiplyFraction(new Fraction(2, 3), new Fraction(3, 4))  // Fraction(6, 12) → 0.5
 ```
 
 Throws `InvalidIntegerError` if any intermediate value overflows safe integer range.
@@ -236,23 +237,23 @@ Fraction.multiplyScalar(new Fraction(1, 4), 3)   // Fraction(3, 4)  → 0.75
 Fraction.multiplyScalar(new Fraction(1, 4), -1)  // Fraction(-1, 4) → -0.25
 ```
 
-Throws `DivideByZeroError` if `scalar` is zero. Throws `InvalidIntegerError` if `scalar` is not a safe integer or if the result overflows.
+Returns `Fraction.Zero` immediately if `scalar` is zero without calling the constructor. Throws `InvalidIntegerError` if `scalar` is not a safe integer or if the result overflows.
 
-### `Fraction.divide(a, b)`
+### `Fraction.divideFraction(a, b)`
 
-Returns a new `Fraction` equal to `a` divided by `b`. Takes the reciprocal of `b` and delegates to `Fraction.multiply`.
+Returns a new `Fraction` equal to `a` divided by `b`. Takes the reciprocal of `b` and delegates to `Fraction.multiplyFraction`.
 
 $$\frac{a}{b} \div \frac{c}{d} = \frac{a}{b} \cdot \frac{d}{c}$$
 
 ```ts
-Fraction.divide(new Fraction(1, 2), new Fraction(3, 4))  // Fraction(4, 6) → 0.667
+Fraction.divideFraction(new Fraction(1, 2), new Fraction(3, 4))  // Fraction(4, 6) → 0.667
 ```
 
 Throws `DivideByZeroError` if the numerator of `b` is zero.
 
 ### `Fraction.divideScalar(fraction, scalar)`
 
-Returns a new `Fraction` divided by an integer. Constructs `1/scalar` and delegates to `Fraction.multiply`.
+Returns a new `Fraction` divided by an integer. Constructs `1/scalar` and delegates to `Fraction.multiplyFraction`.
 
 ```ts
 Fraction.divideScalar(new Fraction(3, 4), 3)   // Fraction(3, 12) → 0.25
@@ -268,7 +269,7 @@ Creates a defensive copy of an existing `Fraction`. Although `Fraction` is immut
 ```ts
 let a = new Fraction(1, 2)
 let snapshot = Fraction.from(a)  // independent copy
-a = Fraction.add(a, new Fraction(1, 4))  // rebind a; snapshot is unaffected
+a = Fraction.addFraction(a, new Fraction(1, 4))  // rebind a; snapshot is unaffected
 ```
 
 ### `Fraction.negate(other)`
@@ -307,6 +308,18 @@ Fraction.expand(new Fraction(1, 2), 3)  // Fraction(3, 6)
 
 Throws `DivideByZeroError` if `scalar` is zero. Throws `InvalidIntegerError` if the result overflows safe integer range.
 
+### `Fraction.equals(a, b)`
+
+Returns `true` if two `Fraction` instances represent the same rational value. Both fractions are reduced before comparison, so `1/2` and `2/4` are considered equal.
+
+```ts
+Fraction.equals(new Fraction(1, 2), new Fraction(2, 4))  // true
+Fraction.equals(new Fraction(1, 2), new Fraction(3, 4))  // false
+
+// Instance form
+new Fraction(1, 2).equals(new Fraction(2, 4))  // true
+```
+
 ## Errors
 
 Both error classes extend `RangeError`. They are defined in `Errors.mts` and re-exported from `Fraction.mts`, so a single import covers everything:
@@ -329,19 +342,6 @@ try {
     if (e instanceof DivideByZeroError) { /* ... */ }
 }
 ```
-
-## Known Issues / Todo
-
-- [x] **`multiplyScalar(fraction, 0)` incorrectly throws `DivideByZeroError`.**
-  Multiplying by zero is mathematically valid and should return `Fraction.Zero`. Currently `multiplyScalar` calls `ValidateScalar`, which rejects zero because that validator is shared with division operations where zero is genuinely invalid. The fix is to give `multiplyScalar` its own validation that only guards against non-safe-integer inputs, not zero.
-
-- [x]  **`Fraction.equals()` is not implemented.**
-  The class has no structural equality method. Two fractions representing the same rational value (e.g. `1/2` and `2/4`) cannot be compared without first reducing both or converting to float (which is imprecise). The expected API:
-  ```ts
-  Fraction.equals(new Fraction(1, 2), new Fraction(2, 4))  // true
-  new Fraction(1, 2).equals(new Fraction(2, 4))            // true (instance form)
-  ```
-  Equality should compare after reducing both operands, so that `1/2 == 2/4 == 3/6` etc.
 
 ---
 

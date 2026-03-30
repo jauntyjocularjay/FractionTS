@@ -22,10 +22,10 @@ async function main() {
     assert.strictEqual(Fraction.Zero.toString(), '0 / 1')
 
     // Arithmetic
-    assert.strictEqual(Fraction.add(new Fraction(1, 4), new Fraction(1, 4)).toNumber(), 0.5)
-    assert.strictEqual(Fraction.subtract(new Fraction(3, 4), new Fraction(1, 4)).toNumber(), 0.5)
-    assert.strictEqual(Fraction.multiply(new Fraction(1, 2), new Fraction(1, 2)).toNumber(), 0.25)
-    assert.strictEqual(Fraction.divide(new Fraction(1, 2), new Fraction(1, 4)).toNumber(), 2)
+    assert.strictEqual(Fraction.addFraction(new Fraction(1, 4), new Fraction(1, 4)).toNumber(), 0.5)
+    assert.strictEqual(Fraction.subtractFraction(new Fraction(3, 4), new Fraction(1, 4)).toNumber(), 0.5)
+    assert.strictEqual(Fraction.multiplyFraction(new Fraction(1, 2), new Fraction(1, 2)).toNumber(), 0.25)
+    assert.strictEqual(Fraction.divideFraction(new Fraction(1, 2), new Fraction(1, 4)).toNumber(), 2)
 
     // Reduce
     assert.strictEqual(Fraction.reduce(new Fraction(4, 8)).toString(), '1 / 2')
