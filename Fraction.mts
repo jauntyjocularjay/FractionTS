@@ -38,6 +38,8 @@ export default class Fraction {
 
         this.n = temp_numerator
         this.d = temp_denominator
+
+        if(reduce) {return Fraction.reduce(this)}
     }
 
     /**
@@ -374,7 +376,7 @@ export default class Fraction {
      */
     subtract(value: Fraction | number, reduce: boolean = false): Fraction {
         if (value instanceof Fraction) {
-            return Fraction.subtractFraction(this, value)
+            return Fraction.subtractFraction(this, value, reduce)
         }
         return Fraction.subtractScalar(this, value, reduce)
     }
