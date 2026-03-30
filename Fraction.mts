@@ -210,10 +210,10 @@ export default class Fraction {
      * Returns a new {@link Fraction} equal to the fraction multiplied by a scalar integer.
      * Only the numerator is scaled; the denominator is unchanged.
      * Uses the identity: (a/b) · n = (a·n) / b.
+     * If `scalar` is zero, returns {@link Fraction.Zero} immediately without validation.
      * @param fraction - The {@link Fraction} to scale.
      * @param scalar - A safe integer to multiply by.
      * @returns A new {@link Fraction} representing `fraction * scalar`.
-     * @throws {DivideByZeroError} If `scalar` is zero.
      * @throws {InvalidIntegerError} If `scalar` is not a safe integer, or if the
      * result overflows safe integer range.
      */

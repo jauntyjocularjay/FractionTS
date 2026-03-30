@@ -102,6 +102,7 @@ Fraction.Zero  // 0/1 — prefer this over new Fraction(0, 1)
 | `toInteger()` | `number` | Integer part, truncated toward zero |
 | `valueOf()` | `number` | Enables implicit numeric coercion (see below) |
 | `remainder` | `Fraction` | Fractional part after removing the integer portion |
+| `equals(other)` | `boolean` | `true` if this fraction equals `other` after reduction |
 
 ### Chainable arithmetic
 
@@ -121,6 +122,7 @@ Each method below is an instance wrapper around its static counterpart. They exi
 | `reciprocal()` | `Fraction.reciprocal(this)` |
 | `reduce()` | `Fraction.reduce(this)` |
 | `expand(scalar)` | `Fraction.expand(this, scalar)` |
+| `equals(other)` | `Fraction.equals(this, other)` |
 
 ```ts
 // Static form — clear that a new value is produced
@@ -236,7 +238,7 @@ Fraction.multiplyScalar(new Fraction(1, 4), 3)   // Fraction(3, 4)  → 0.75
 Fraction.multiplyScalar(new Fraction(1, 4), -1)  // Fraction(-1, 4) → -0.25
 ```
 
-Throws `DivideByZeroError` if `scalar` is zero. Throws `InvalidIntegerError` if `scalar` is not a safe integer or if the result overflows.
+Returns `Fraction.Zero` immediately if `scalar` is zero without calling the constructor. Throws `InvalidIntegerError` if `scalar` is not a safe integer or if the result overflows.
 
 ### `Fraction.divide(a, b)`
 
@@ -307,6 +309,18 @@ Fraction.expand(new Fraction(1, 2), 3)  // Fraction(3, 6)
 
 Throws `DivideByZeroError` if `scalar` is zero. Throws `InvalidIntegerError` if the result overflows safe integer range.
 
+### `Fraction.equals(a, b)`
+
+Returns `true` if two `Fraction` instances represent the same rational value. Both fractions are reduced before comparison, so `1/2` and `2/4` are considered equal.
+
+```ts
+Fraction.equals(new Fraction(1, 2), new Fraction(2, 4))  // true
+Fraction.equals(new Fraction(1, 2), new Fraction(3, 4))  // false
+
+// Instance form
+new Fraction(1, 2).equals(new Fraction(2, 4))  // true
+```
+
 ## Errors
 
 Both error classes extend `RangeError`. They are defined in `Errors.mts` and re-exported from `Fraction.mts`, so a single import covers everything:
@@ -329,19 +343,6 @@ try {
     if (e instanceof DivideByZeroError) { /* ... */ }
 }
 ```
-
-## Known Issues / Todo
-
-- [x] **`multiplyScalar(fraction, 0)` incorrectly throws `DivideByZeroError`.**
-  Multiplying by zero is mathematically valid and should return `Fraction.Zero`. Currently `multiplyScalar` calls `ValidateScalar`, which rejects zero because that validator is shared with division operations where zero is genuinely invalid. The fix is to give `multiplyScalar` its own validation that only guards against non-safe-integer inputs, not zero.
-
-- [x]  **`Fraction.equals()` is not implemented.**
-  The class has no structural equality method. Two fractions representing the same rational value (e.g. `1/2` and `2/4`) cannot be compared without first reducing both or converting to float (which is imprecise). The expected API:
-  ```ts
-  Fraction.equals(new Fraction(1, 2), new Fraction(2, 4))  // true
-  new Fraction(1, 2).equals(new Fraction(2, 4))            // true (instance form)
-  ```
-  Equality should compare after reducing both operands, so that `1/2 == 2/4 == 3/6` etc.
 
 ---
 
