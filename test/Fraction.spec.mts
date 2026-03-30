@@ -37,6 +37,10 @@ describe('Fraction construction', () => {
     it('throws InvalidIntegerError for non-integer denominator', () => {
         expect(() => new Fraction(1, 2.5)).toThrow(InvalidIntegerError)
     })
+
+    it('reduces fraction when reduce flag is true', () => {
+        expect(new Fraction(4, 8, true).toString()).toBe('1 / 2')
+    })
 })
 
 // ---------------------------------------------------------------------------
@@ -194,6 +198,11 @@ describe('Fraction.Add()', () => {
     it('adds positive and negative fraction', () => {
         expect(Fraction.addFraction(new Fraction(3, 4), new Fraction(-1, 4)).toNumber()).toBe(0.5)
     })
+
+    it('reduces result when reduce flag is true', () => {
+        // 1/4 + 1/4 = 2/4, reduced to 1/2
+        eqFrac(Fraction.addFraction(new Fraction(1, 4), new Fraction(1, 4), true), 1, 2)
+    })
 })
 
 describe('Fraction.AddScalar()', () => {
@@ -207,6 +216,11 @@ describe('Fraction.AddScalar()', () => {
 
     it('throws InvalidIntegerError for float scalar', () => {
         expect(() => Fraction.addScalar(new Fraction(1, 4), 0.5)).toThrow(InvalidIntegerError)
+    })
+
+    it('reduces result when reduce flag is true', () => {
+        // 2/6 + 1 = 8/6, reduced to 4/3
+        eqFrac(Fraction.addScalar(new Fraction(2, 6), 1, true), 4, 3)
     })
 })
 
@@ -228,6 +242,11 @@ describe('Fraction.subtract()', () => {
     it('produces negative result when smaller minus larger', () => {
         expect(Fraction.subtractFraction(new Fraction(1, 4), new Fraction(3, 4)).toNumber()).toBe(-0.5)
     })
+
+    it('reduces result when reduce flag is true', () => {
+        // 3/4 - 1/4 = 2/4, reduced to 1/2
+        eqFrac(Fraction.subtractFraction(new Fraction(3, 4), new Fraction(1, 4), true), 1, 2)
+    })
 })
 
 describe('Fraction.subtractScalar()', () => {
@@ -237,6 +256,11 @@ describe('Fraction.subtractScalar()', () => {
 
     it('subtracting negative integer increases value', () => {
         eqFrac(Fraction.subtractScalar(new Fraction(1, 4), -1), 5, 4)
+    })
+
+    it('reduces result when reduce flag is true', () => {
+        // 10/4 - 1 = 6/4, reduced to 3/2
+        eqFrac(Fraction.subtractScalar(new Fraction(10, 4), 1, true), 3, 2)
     })
 })
 
@@ -252,6 +276,11 @@ describe('Fraction.Multiply()', () => {
     it('multiplying by Zero gives Zero', () => {
         expect(Fraction.multiplyFraction(new Fraction(3, 4), Fraction.Zero).toNumber()).toBe(0)
     })
+
+    it('reduces result when reduce flag is true', () => {
+        // 2/3 * 3/4 = 6/12, reduced to 1/2
+        eqFrac(Fraction.multiplyFraction(new Fraction(2, 3), new Fraction(3, 4), true), 1, 2)
+    })
 })
 
 describe('Fraction.MultiplyScalar()', () => {
@@ -265,6 +294,11 @@ describe('Fraction.MultiplyScalar()', () => {
 
     it('returns Zero for scalar 0', () => {
         expect(Fraction.multiplyScalar(new Fraction(1, 4), 0).toNumber()).toBe(0)
+    })
+
+    it('reduces result when reduce flag is true', () => {
+        // 1/4 * 2 = 2/4, reduced to 1/2
+        eqFrac(Fraction.multiplyScalar(new Fraction(1, 4), 2, true), 1, 2)
     })
 })
 
@@ -308,6 +342,11 @@ describe('Fraction.Divide()', () => {
     it('throws DivideByZeroError when divisor numerator is 0', () => {
         expect(() => Fraction.divideFraction(new Fraction(1, 2), Fraction.Zero)).toThrow(DivideByZeroError)
     })
+
+    it('reduces result when reduce flag is true', () => {
+        // (1/2) / (3/4) = 4/6, reduced to 2/3
+        eqFrac(Fraction.divideFraction(new Fraction(1, 2), new Fraction(3, 4), true), 2, 3)
+    })
 })
 
 describe('Fraction.DivideScalar()', () => {
@@ -321,6 +360,11 @@ describe('Fraction.DivideScalar()', () => {
 
     it('throws DivideByZeroError for scalar 0', () => {
         expect(() => Fraction.divideScalar(new Fraction(1, 2), 0)).toThrow(DivideByZeroError)
+    })
+
+    it('reduces result when reduce flag is true', () => {
+        // 3/4 / 3 = 3/12, reduced to 1/4
+        eqFrac(Fraction.divideScalar(new Fraction(3, 4), 3, true), 1, 4)
     })
 })
 
@@ -359,5 +403,94 @@ describe('chaining', () => {
     it('negate then reciprocal', () => {
         // reciprocal of -(3/4) = -4/3
         eqFrac(new Fraction(3, 4).negate().reciprocal(), -4, 3)
+    })
+
+    it('reduce flag mid-chain produces same value as .reduce() mid-chain', () => {
+        // Both paths: 1/4 + 1/4 → 1/2 → * 4 → 2/1
+        const withFlag   = new Fraction(1, 4)
+            .add(new Fraction(1, 4), true)
+            .multiply(4)
+        const withMethod = new Fraction(1, 4)
+            .add(new Fraction(1, 4))
+            .reduce()
+            .multiply(4)
+        expect(withFlag.equals(withMethod)).toBe(true)
+    })
+
+    it('divide then add using inline reduce', () => {
+        // 3/4 ÷ 3 (reduce) = 1/4; + 1/4 = 2/4
+        eqFrac(new Fraction(3, 4).divide(3, true).add(new Fraction(1, 4)), 2, 4)
+    })
+
+    it('longer chain: multiply, add, subtract, reduce', () => {
+        // 2/3 * 3/4 = 6/12; + 3/12 = 9/12; - 3/12 = 6/12; reduce = 1/2
+        const result = new Fraction(2, 3)
+            .multiply(new Fraction(3, 4))
+            .add(new Fraction(3, 12))
+            .subtract(new Fraction(3, 12))
+            .reduce()
+        eqFrac(result, 1, 2)
+    })
+
+    it('chaining with reduce flag at each step keeps value equal to fully-reduced chain', () => {
+        // Each step reduces eagerly vs reducing only at the end — values must be equal
+        const eager = new Fraction(2, 4)
+            .add(new Fraction(2, 4), true)   // 4/4 → 1/1
+            .multiply(new Fraction(3, 6), true) // 1/1 * 1/2 = 1/2
+            .subtract(new Fraction(1, 4), true) // 1/2 - 1/4 = 1/4
+
+        const lazy = new Fraction(2, 4)
+            .add(new Fraction(2, 4))
+            .multiply(new Fraction(3, 6))
+            .subtract(new Fraction(1, 4))
+            .reduce()
+
+        expect(eager.equals(lazy)).toBe(true)
+    })
+})
+
+// ---------------------------------------------------------------------------
+// Instance reduce flag
+// ---------------------------------------------------------------------------
+
+describe('instance arithmetic reduce flag', () => {
+    it('add(Fraction, true) reduces result', () => {
+        // 1/4 + 1/4 = 2/4, reduced to 1/2
+        eqFrac(new Fraction(1, 4).add(new Fraction(1, 4), true), 1, 2)
+    })
+
+    it('add(number, true) reduces result', () => {
+        // 2/6 + 1 = 8/6, reduced to 4/3
+        eqFrac(new Fraction(2, 6).add(1, true), 4, 3)
+    })
+
+    it('subtract(Fraction, true) reduces result', () => {
+        // 3/4 - 1/4 = 2/4, reduced to 1/2
+        eqFrac(new Fraction(3, 4).subtract(new Fraction(1, 4), true), 1, 2)
+    })
+
+    it('subtract(number, true) reduces result', () => {
+        // 10/4 - 1 = 6/4, reduced to 3/2
+        eqFrac(new Fraction(10, 4).subtract(1, true), 3, 2)
+    })
+
+    it('multiply(Fraction, true) reduces result', () => {
+        // 2/3 * 3/4 = 6/12, reduced to 1/2
+        eqFrac(new Fraction(2, 3).multiply(new Fraction(3, 4), true), 1, 2)
+    })
+
+    it('multiply(number, true) reduces result', () => {
+        // 1/4 * 2 = 2/4, reduced to 1/2
+        eqFrac(new Fraction(1, 4).multiply(2, true), 1, 2)
+    })
+
+    it('divide(Fraction, true) reduces result', () => {
+        // (1/2) / (3/4) = 4/6, reduced to 2/3
+        eqFrac(new Fraction(1, 2).divide(new Fraction(3, 4), true), 2, 3)
+    })
+
+    it('divide(number, true) reduces result', () => {
+        // 3/4 / 3 = 3/12, reduced to 1/4
+        eqFrac(new Fraction(3, 4).divide(3, true), 1, 4)
     })
 })
