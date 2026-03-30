@@ -9,7 +9,7 @@ class DivideByZeroError extends RangeError {
     constructor() {
         super(`Cannot divide by zero. Use Fraction.Zero instead.`)
         this.name = 'DivideByZeroError'
-    } 
+    }
 }
 
 export {
