@@ -17,7 +17,7 @@ export default class Fraction {
 
     /**
      * @param numerator - Must be a safe integer. Will be negated if `denominator` is negative.
-     * @param denominator - Must be a non-zero safe integer. Negative values will be normalised.
+     * @param denominator - Must be a non-zero safe integer. Negative values will be normalised. If not provided, defaults to 1
      * @throws {DivideByZeroError} If `denominator` is zero.
      * @throws {InvalidIntegerError} If either argument is not a safe integer.
      */
