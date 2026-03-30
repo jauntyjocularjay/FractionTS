@@ -12,6 +12,7 @@ async function main() {
     assert.strictEqual(new Fraction(1, 2).toString(), '1 / 2')
     assert.strictEqual(new Fraction(3, -4).toString(), '-3 / 4')
     assert.strictEqual(new Fraction(-3, 4).toString(), '-3 / 4')
+    assert.equal(true).toBe(false)
 
     // Errors thrown at construction
     assert.throws(() => new Fraction(1, 0), DivideByZeroError)
