@@ -141,7 +141,7 @@ export default class Fraction {
      * @returns A new {@link Fraction} representing `a + b`.
      * @throws {InvalidIntegerError} If any intermediate value overflows safe integer range.
      */
-    static add(a: Fraction, b: Fraction): Fraction {
+    static addFraction(a: Fraction, b: Fraction): Fraction {
         const gcd = Fraction.GCD(a.d, b.d)
         const lcm = (a.d / gcd) * b.d
         const scaleA = lcm / a.d
@@ -169,14 +169,14 @@ export default class Fraction {
 
     /**
      * Returns a new {@link Fraction} equal to the difference of two fractions.
-     * Negates `b` and delegates to {@link Fraction.add}.
+     * Negates `b` and delegates to {@link Fraction.addFraction}.
      * @param a - The {@link Fraction} to subtract from.
      * @param b - The {@link Fraction} to subtract.
      * @returns A new {@link Fraction} representing `a - b`.
      * @throws {InvalidIntegerError} If any intermediate value overflows safe integer range.
      */
-    static subtract(a: Fraction, b: Fraction): Fraction {
-        return Fraction.add(a, Fraction.negate(b))
+    static subtractFraction(a: Fraction, b: Fraction): Fraction {
+        return Fraction.addFraction(a, Fraction.negate(b))
     }
 
     /**
@@ -200,7 +200,7 @@ export default class Fraction {
      * @returns A new {@link Fraction} representing `a * b`.
      * @throws {InvalidIntegerError} If any intermediate value overflows safe integer range.
      */
-    static multiply(a: Fraction, b: Fraction): Fraction {
+    static multiplyFraction(a: Fraction, b: Fraction): Fraction {
         const numerator = a.n * b.n
         const denominator = a.d * b.d
         return new Fraction(numerator, denominator)
@@ -218,9 +218,9 @@ export default class Fraction {
      * result overflows safe integer range.
      */
     static multiplyScalar(fraction: Fraction, scalar: number): Fraction {
-        if(scalar === 0) return Fraction.Zero
+        if (scalar === 0) return Fraction.Zero
 
-        Fraction.ValidateScalar(scalar)
+        Fraction.validateScalar(scalar)
         const numerator = fraction.n * scalar
         if (!Number.isSafeInteger(numerator))
             throw new InvalidIntegerError(numerator)
@@ -229,20 +229,20 @@ export default class Fraction {
 
     /**
      * Returns a new {@link Fraction} equal to `a` divided by `b`.
-     * Takes the reciprocal of `b` and delegates to {@link Fraction.multiply}.
+     * Takes the reciprocal of `b` and delegates to {@link Fraction.multiplyFraction}.
      * @param a - The dividend {@link Fraction}.
      * @param b - The divisor {@link Fraction}.
      * @returns A new {@link Fraction} representing `a / b`.
      * @throws {DivideByZeroError} If the numerator of `b` is zero.
      * @throws {InvalidIntegerError} If any intermediate value overflows safe integer range.
      */
-    static divide(a: Fraction, b: Fraction): Fraction {
-        return Fraction.multiply(a, Fraction.reciprocal(b))
+    static divideFraction(a: Fraction, b: Fraction): Fraction {
+        return Fraction.multiplyFraction(a, Fraction.reciprocal(b))
     }
 
     /**
      * Returns a new {@link Fraction} equal to the fraction divided by a scalar integer.
-     * Takes the reciprocal of `scalar` as a fraction and delegates to {@link Fraction.multiply}.
+     * Takes the reciprocal of `scalar` as a fraction and delegates to {@link Fraction.multiplyFraction}.
      * @param fraction - The {@link Fraction} to divide.
      * @param scalar - A non-zero safe integer to divide by.
      * @returns A new {@link Fraction} representing `fraction / scalar`.
@@ -250,8 +250,8 @@ export default class Fraction {
      * @throws {InvalidIntegerError} If `scalar` is not a safe integer.
      */
     static divideScalar(fraction: Fraction, scalar: number): Fraction {
-        Fraction.ValidateScalar(scalar)
-        return Fraction.multiply(fraction, new Fraction(1, scalar))
+        Fraction.validateScalar(scalar)
+        return Fraction.multiplyFraction(fraction, new Fraction(1, scalar))
     }
 
     /**
@@ -288,7 +288,7 @@ export default class Fraction {
      * result overflows safe integer range.
      */
     static expand(fraction: Fraction, scalar: number): Fraction {
-        Fraction.ValidateScalar(scalar)
+        Fraction.validateScalar(scalar)
         const numerator = fraction.n * scalar
         const denominator = fraction.d * scalar
         return new Fraction(numerator, denominator)
@@ -308,84 +308,32 @@ export default class Fraction {
     // Each method delegates to its static counterpart with `this` as the first argument.
     // -------------------------------------------------------------------------
 
-    /**
-     * Returns a new {@link Fraction} equal to the sum of this and `other`.
-     * Delegates to {@link Fraction.add}.
-     * @param other - The {@link Fraction} to add.
-     * @returns A new {@link Fraction} representing `this + other`.
-     */
-    add(other: Fraction): Fraction {
-        return Fraction.add(this, other)
+    add(value: Fraction | number) {
+        if (value instanceof Fraction) {
+            return Fraction.addFraction(this, value)
+        }
+        return Fraction.addScalar(this, value)
     }
 
-    /**
-     * Returns a new {@link Fraction} equal to this plus an integer.
-     * Delegates to {@link Fraction.addScalar}.
-     * @param scalar - A safe integer to add.
-     * @returns A new {@link Fraction} representing `this + scalar`.
-     */
-    addScalar(scalar: number): Fraction {
-        return Fraction.addScalar(this, scalar)
+    subtract(value: Fraction | number): Fraction {
+        if (value instanceof Fraction) {
+            return Fraction.subtractFraction(this, value)
+        }
+        return Fraction.subtractScalar(this, value)
     }
 
-    /**
-     * Returns a new {@link Fraction} equal to the difference of this and `other`.
-     * Delegates to {@link Fraction.subtract}.
-     * @param other - The {@link Fraction} to subtract.
-     * @returns A new {@link Fraction} representing `this - other`.
-     */
-    subtract(other: Fraction): Fraction {
-        return Fraction.subtract(this, other)
+    multiply(value: Fraction | number): Fraction {
+        if (value instanceof Fraction) {
+            return Fraction.multiplyFraction(this, value)
+        }
+        return Fraction.multiplyScalar(this, value)
     }
 
-    /**
-     * Returns a new {@link Fraction} equal to this minus an integer.
-     * Delegates to {@link Fraction.subtractScalar}.
-     * @param scalar - A safe integer to subtract.
-     * @returns A new {@link Fraction} representing `this - scalar`.
-     */
-    subtractScalar(scalar: number): Fraction {
-        return Fraction.subtractScalar(this, scalar)
-    }
-
-    /**
-     * Returns a new {@link Fraction} equal to the product of this and `other`.
-     * Delegates to {@link Fraction.multiply}.
-     * @param other - The {@link Fraction} to multiply by.
-     * @returns A new {@link Fraction} representing `this * other`.
-     */
-    multiply(other: Fraction): Fraction {
-        return Fraction.multiply(this, other)
-    }
-
-    /**
-     * Returns a new {@link Fraction} equal to this multiplied by a scalar integer.
-     * Delegates to {@link Fraction.multiplyScalar}.
-     * @param scalar - A safe integer to multiply by.
-     * @returns A new {@link Fraction} representing `this * scalar`.
-     */
-    multiplyScalar(scalar: number): Fraction {
-        return Fraction.multiplyScalar(this, scalar)
-    }
-
-    /**
-     * Returns a new {@link Fraction} equal to this divided by `other`.
-     * Delegates to {@link Fraction.divide}.
-     * @param other - The {@link Fraction} to divide by.
-     * @returns A new {@link Fraction} representing `this / other`.
-     */
-    divide(other: Fraction): Fraction {
-        return Fraction.divide(this, other)
-    }
-
-    /**
-     * Returns a new {@link Fraction} equal to this divided by a scalar integer.
-     * Delegates to {@link Fraction.divideScalar}.
-     * @param scalar - A non-zero safe integer to divide by.
-     * @returns A new {@link Fraction} representing `this / scalar`.
-     */
-    divideScalar(scalar: number): Fraction {
-        return Fraction.divideScalar(this, scalar)
+    divide(value: Fraction | number): Fraction {
+        if (value instanceof Fraction) {
+            return Fraction.divideFraction(this, value)
+        }
+        return Fraction.divideScalar(this, value)
     }
 
     /**
@@ -439,7 +387,10 @@ export default class Fraction {
      * @throws {DivideByZeroError} If `denominator` is zero.
      * @throws {InvalidIntegerError} If either value is not a safe integer.
      */
-    private static ValidateFraction(numerator: number, denominator: number): void {
+    private static ValidateFraction(
+        numerator: number,
+        denominator: number
+    ): void {
         if (denominator === 0) throw new DivideByZeroError()
         if (
             !Number.isSafeInteger(numerator) ||
@@ -454,7 +405,7 @@ export default class Fraction {
      * @throws {DivideByZeroError} If `scalar` is zero.
      * @throws {InvalidIntegerError} If `scalar` is not a safe integer.
      */
-    private static ValidateScalar(scalar: number): void {
+    private static validateScalar(scalar: number): void {
         if (scalar === 0) throw new DivideByZeroError()
         if (!Number.isSafeInteger(scalar)) throw new InvalidIntegerError(scalar)
     }
