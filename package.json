@@ -12,9 +12,9 @@
     "scripts": {
         "dev": "npm i && git submodule update --init --recursive",
         "build": "tsc",
-        "test": "clear && node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
+        "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
         "test:cjs": "npm run build && node test/cjs-compat.cjs",
-        "test:all": "npm test && npm run test:cjs",
+        "test:all": "clear && npm test && npm run test:cjs",
         "eslint": "eslint Fraction.mts Errors.mts"
     },
     "type": "module",
