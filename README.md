@@ -2,6 +2,37 @@
 
 An immutable TypeScript class representing a rational number as a numerator/denominator pair of safe integers.
 
+## Table of Contents
+
+- [Design](#design)
+- [Using in a JavaScript project](#using-in-a-javascript-project)
+- [Using in a CommonJS project](#using-in-a-commonjs-project)
+- [Constructor](#constructor)
+- [Instance methods](#instance-methods)
+  - [Conversion](#conversion)
+  - [Chainable arithmetic](#chainable-arithmetic)
+  - [`valueOf()`](#valueof)
+  - [`remainder`](#remainder-getter)
+- [Static methods](#static-methods)
+  - [`Fraction.addFraction`](#fractionaddfractiona-b-reduce)
+  - [`Fraction.addScalar`](#fractionaddscalarfraction-scalar-reduce)
+  - [`Fraction.subtractFraction`](#fractionsubtractfractiona-b-reduce)
+  - [`Fraction.subtractScalar`](#fractionsubtractscalarfraction-scalar-reduce)
+  - [`Fraction.multiplyFraction`](#fractionmultiplyfractiona-b-reduce)
+  - [`Fraction.multiplyScalar`](#fractionmultiplyscalarfraction-scalar-reduce)
+  - [`Fraction.divideFraction`](#fractiondividefractiona-b-reduce)
+  - [`Fraction.divideScalar`](#fractiondividescalarfraction-scalar-reduce)
+  - [`Fraction.from`](#fractionfromother)
+  - [`Fraction.negate`](#fractionnegateother)
+  - [`Fraction.reciprocal`](#fractionreciprocalother)
+  - [`Fraction.reduce`](#fractionreducefraction)
+  - [`Fraction.expand`](#fractionexpandfraction-scalar)
+  - [`Fraction.equals`](#fractionequalsa-b)
+- [Errors](#errors)
+- [Precision note](#precision-note)
+- [Contributing](#contributing)
+- [Tools and Acknowledgement](#tools-and-acknowledgement)
+
 ## Design
 
 - The denominator is always normalised to a positive integer at construction time. Negative fractions are represented by a negative numerator.
@@ -344,6 +375,22 @@ try {
     if (e instanceof DivideByZeroError) { /* ... */ }
 }
 ```
+
+---
+
+## Contributing
+
+Contributions are welcome! I want this to be a robust way to do arithmetic with fractions, the under-appreciated branch of math in Computer Science. 
+
+### Steps
+
+1. Fork the repo and `master` branch
+1. Run `npm install`
+1. Add your changes to the local fork
+1. Open a pull request
+1. Ensure the automated tests pass
+1. Request a review
+1. Merge
 
 ---
 
