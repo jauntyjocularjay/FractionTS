@@ -17,7 +17,8 @@ export default class Fraction {
 
     /**
      * @param numerator - Must be a safe integer. Will be negated if `denominator` is negative.
-     * @param denominator - Must be a non-zero safe integer. Negative values will be normalised. If not provided, defaults to 1
+     * @param denominator - Must be a non-zero safe integer. Negative values will be normalised. Defaults to `1`.
+     * @param reduce - If `true`, the returned instance is automatically reduced to lowest terms. Defaults to `false`.
      * @throws {DivideByZeroError} If `denominator` is zero.
      * @throws {InvalidIntegerError} If either argument is not a safe integer.
      */
@@ -91,8 +92,8 @@ export default class Fraction {
      * Returns `true` if two {@link Fraction} instances represent the same rational
      * value. Both fractions are reduced before comparison, so `1/2` and `2/4`
      * are considered equal.
-     * @param fraction_a - The first {@link Fraction}.
-     * @param fraction_b - The second {@link Fraction}.
+     * @param a - The first {@link Fraction}.
+     * @param b - The second {@link Fraction}.
      * @returns `true` if `a` and `b` are equal in value.
      * @example Fraction.equals(new Fraction(1, 2), new Fraction(2, 4)) // true
      */
@@ -144,6 +145,7 @@ export default class Fraction {
      * fraction is scaled.
      * @param a - The first {@link Fraction}.
      * @param b - The second {@link Fraction}.
+     * @param reduce - If `true`, the result is reduced to lowest terms. Defaults to `false`.
      * @returns A new {@link Fraction} representing `a + b`.
      * @throws {InvalidIntegerError} If any intermediate value overflows safe integer range.
      */
@@ -165,6 +167,7 @@ export default class Fraction {
      * Uses the identity: a/b + n = (a + n·b) / b.
      * @param fraction - The {@link Fraction} to add to.
      * @param scalar - A safe integer to add.
+     * @param reduce - If `true`, the result is reduced to lowest terms. Defaults to `false`.
      * @returns A new {@link Fraction} representing `fraction + scalar`.
      * @throws {InvalidIntegerError} If the scalar is not a safe integer, or if any
      * intermediate value overflows safe integer range.
@@ -186,6 +189,7 @@ export default class Fraction {
      * Negates `b` and delegates to {@link Fraction.addFraction}.
      * @param a - The {@link Fraction} to subtract from.
      * @param b - The {@link Fraction} to subtract.
+     * @param reduce - If `true`, the result is reduced to lowest terms. Defaults to `false`.
      * @returns A new {@link Fraction} representing `a - b`.
      * @throws {InvalidIntegerError} If any intermediate value overflows safe integer range.
      */
@@ -202,6 +206,7 @@ export default class Fraction {
      * Negates `scalar` and delegates to {@link Fraction.addScalar}.
      * @param fraction - The {@link Fraction} to subtract from.
      * @param scalar - A safe integer to subtract.
+     * @param reduce - If `true`, the result is reduced to lowest terms. Defaults to `false`.
      * @returns A new {@link Fraction} representing `fraction - scalar`.
      * @throws {InvalidIntegerError} If the scalar is not a safe integer, or if the
      * result overflows safe integer range.
@@ -219,6 +224,7 @@ export default class Fraction {
      * Uses the identity: (a/b) · (c/d) = (a·c) / (b·d).
      * @param a - The first {@link Fraction}.
      * @param b - The second {@link Fraction}.
+     * @param reduce - If `true`, the result is reduced to lowest terms. Defaults to `false`.
      * @returns A new {@link Fraction} representing `a * b`.
      * @throws {InvalidIntegerError} If any intermediate value overflows safe integer range.
      */
@@ -239,6 +245,7 @@ export default class Fraction {
      * If `scalar` is zero, returns {@link Fraction.Zero} immediately without validation.
      * @param fraction - The {@link Fraction} to scale.
      * @param scalar - A safe integer to multiply by.
+     * @param reduce - If `true`, the result is reduced to lowest terms. Defaults to `false`.
      * @returns A new {@link Fraction} representing `fraction * scalar`.
      * @throws {InvalidIntegerError} If `scalar` is not a safe integer, or if the
      * result overflows safe integer range.
@@ -262,6 +269,7 @@ export default class Fraction {
      * Takes the reciprocal of `b` and delegates to {@link Fraction.multiplyFraction}.
      * @param a - The dividend {@link Fraction}.
      * @param b - The divisor {@link Fraction}.
+     * @param reduce - If `true`, the result is reduced to lowest terms. Defaults to `false`.
      * @returns A new {@link Fraction} representing `a / b`.
      * @throws {DivideByZeroError} If the numerator of `b` is zero.
      * @throws {InvalidIntegerError} If any intermediate value overflows safe integer range.
@@ -279,6 +287,7 @@ export default class Fraction {
      * Takes the reciprocal of `scalar` as a fraction and delegates to {@link Fraction.multiplyFraction}.
      * @param fraction - The {@link Fraction} to divide.
      * @param scalar - A non-zero safe integer to divide by.
+     * @param reduce - If `true`, the result is reduced to lowest terms. Defaults to `false`.
      * @returns A new {@link Fraction} representing `fraction / scalar`.
      * @throws {DivideByZeroError} If `scalar` is zero.
      * @throws {InvalidIntegerError} If `scalar` is not a safe integer.
@@ -356,6 +365,7 @@ export default class Fraction {
      * If `value` is a {@link Fraction}, delegates to {@link Fraction.addFraction}.
      * If `value` is a number, delegates to {@link Fraction.addScalar}.
      * @param value - A {@link Fraction} or safe integer to add.
+     * @param reduce - If `true`, the result is reduced to lowest terms. Defaults to `false`.
      * @returns A new {@link Fraction} representing `this + value`.
      * @throws {InvalidIntegerError} If `value` is not a safe integer (scalar path), or if any intermediate value overflows.
      */
@@ -371,6 +381,7 @@ export default class Fraction {
      * If `value` is a {@link Fraction}, delegates to {@link Fraction.subtractFraction}.
      * If `value` is a number, delegates to {@link Fraction.subtractScalar}.
      * @param value - A {@link Fraction} or safe integer to subtract.
+     * @param reduce - If `true`, the result is reduced to lowest terms. Defaults to `false`.
      * @returns A new {@link Fraction} representing `this - value`.
      * @throws {InvalidIntegerError} If `value` is not a safe integer (scalar path), or if any intermediate value overflows.
      */
@@ -386,6 +397,7 @@ export default class Fraction {
      * If `value` is a {@link Fraction}, delegates to {@link Fraction.multiplyFraction}.
      * If `value` is a number, delegates to {@link Fraction.multiplyScalar}.
      * @param value - A {@link Fraction} or safe integer to multiply by.
+     * @param reduce - If `true`, the result is reduced to lowest terms. Defaults to `false`.
      * @returns A new {@link Fraction} representing `this * value`.
      * @throws {InvalidIntegerError} If `value` is not a safe integer (scalar path), or if any intermediate value overflows.
      */
@@ -401,6 +413,7 @@ export default class Fraction {
      * If `value` is a {@link Fraction}, delegates to {@link Fraction.divideFraction}.
      * If `value` is a number, delegates to {@link Fraction.divideScalar}.
      * @param value - A {@link Fraction} or non-zero safe integer to divide by.
+     * @param reduce - If `true`, the result is reduced to lowest terms. Defaults to `false`.
      * @returns A new {@link Fraction} representing `this / value`.
      * @throws {DivideByZeroError} If `value` is zero (scalar path) or a {@link Fraction} with numerator zero.
      * @throws {InvalidIntegerError} If `value` is not a safe integer (scalar path).
