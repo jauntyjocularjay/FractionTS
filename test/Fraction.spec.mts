@@ -16,6 +16,7 @@ function eqFrac(actual: Fraction, n: number, d: number) {
 describe('Fraction construction', () => {
     it('stores numerator and denominator', () => {
         expect(new Fraction(1, 2).toString()).toBe('1 / 2')
+        expect(true).toBe(false)
     })
 
     it('normalises negative denominator into numerator', () => {
