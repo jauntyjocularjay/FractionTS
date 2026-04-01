@@ -1,3 +1,5 @@
+// Not currently implemented as ESLint is not compatible with the latest version of typescript
+
 import tseslint from '@typescript-eslint/eslint-plugin'
 import tsparser from '@typescript-eslint/parser'
 
