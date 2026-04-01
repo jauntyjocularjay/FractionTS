@@ -12,9 +12,10 @@
     "scripts": {
         "dev": "npm i",
         "build": "tsc",
-        "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
+        "test": "npm run test:mjs && npm run test:cjs",
         "test:cjs": "npm run build && node test/cjs-compat.cjs",
-        "test:all": "clear && npm test && npm run test:cjs"
+        "test:mjs": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
+        "test:all": "clear && npm run test:mjs && npm run test:cjs"
     },
     "type": "module",
     "jest": {
